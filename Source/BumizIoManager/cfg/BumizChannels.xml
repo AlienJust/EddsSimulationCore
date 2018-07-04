@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BumizChannels>
+	<ComPortChannel Label="ch3" PortName="COM1" BaudRate="9600" OnlineCheckTimeSeconds="2" CheckNetAddress="true"/>-->
+	<!--<VirtualChannel Label="VCH"/>-->
+</BumizChannels>

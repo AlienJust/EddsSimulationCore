@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\Release</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\Debug</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Audience\Audience.csproj" />
+    <ProjectReference Include="..\BumizNetwork.Contracts\BumizNetwork.Contracts.csproj" />
+    <ProjectReference Include="..\Commands.Contracts\Commands.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AJ.Std.Loggers">
+      <HintPath>..\References\AJ.Std.Loggers.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Loggers.Contracts">
+      <HintPath>..\References\AJ.Std.Loggers.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Text">
+      <HintPath>..\References\AJ.Std.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Text.Contracts">
+      <HintPath>..\References\AJ.Std.Text.Contracts.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

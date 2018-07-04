@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Objects>
+	<!--<Object Name="Gateway1" SendMicroPackets="True">
+		<Targets>
+			<UdpScadaLink Label="LocalScada" Address="9000"/>
+		</Targets>
+	</Object>-->
+
+	<Object Name="gate2" SendMicroPackets="True">
+		<Targets>
+			<UdpScadaLink Label="AjHomeScada" Address="2000"/>
+		</Targets>
+	</Object>
+  <Object Name="gate2001" SendMicroPackets="True">
+    <Targets>
+      <UdpScadaLink Label="AjHomeScada" Address="2001"/>
+    </Targets>
+  </Object>
+	<Object Name="gate222" SendMicroPackets="True">
+		<Targets>
+			<UdpScadaLink Label="AjHomeScada" Address="2"/>
+		</Targets>
+	</Object>
+	<!--<Object Name="Gateway2" SendMicroPackets="True">
+		<Targets>
+			<UdpScadaLink Label="LocalScada" Address="10"/>
+		</Targets>
+	</Object>-->
+	<!--<Object Name="PulseCounter1" SendMicroPackets="False">
+		<Targets>
+			<UdpScadaLink Label="LocalScada" Address="2"/>
+			<UdpScadaLink Label="Horizont" Address="802"/>
+		</Targets>
+	</Object>-->
+	<!--<Object Name="PulseCounter2">
+	 <Targets>
+		<UdpScadaLink Label="LocalScada" Address="3"/>
+		<UdpScadaLink Label="Horizont" Address="802"/>
+	 </Targets>
+  </Object>-->
+</Objects>

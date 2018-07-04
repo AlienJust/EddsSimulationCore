@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<AttachedControllerInfos>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="5" Name="bmz5"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="54" Name="bmz54"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="8" Name="bmz8"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="22" Name="bmz22"/>
+	<!--<AttachedControllerInfo Gateway="Gateway1" Channel="1" Type="13" Number="0" Name="v2"/>-->
+	<!--<AttachedControllerInfo Gateway="Gateway1" Channel="7" Type="13" Number="5" Name="PulseCounter1"/>-->
+	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="1" Type="13" Number="5" Name="PulseCounter2"/>-->
+	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="0" Type="13" Number="6" Name="PulseCounter3"/>-->
+	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="6" Type="13" Number="50" Name="PulseCounter4"/>-->
+</AttachedControllerInfos>

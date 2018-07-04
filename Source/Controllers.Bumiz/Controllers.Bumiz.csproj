@@ -1,0 +1,66 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\Release</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\Debug</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CoreCLR-NCalc" Version="2.2.34" />
+    <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Audience\Audience.csproj" />
+    <ProjectReference Include="..\Bumiz.Apply.PulseCounterArchiveReader\Bumiz.Apply.PulseCounterArchiveReader.csproj" />
+    <ProjectReference Include="..\BumizIoManager.Contracts\BumizIoManager.Contracts.csproj" />
+    <ProjectReference Include="..\Commands.Bumiz\Commands.Bumiz.csproj" />
+    <ProjectReference Include="..\Commands.Contracts\Commands.Contracts.csproj" />
+    <ProjectReference Include="..\Controllers.Contracts\Controllers.Contracts.csproj" />
+    <ProjectReference Include="..\Controllers.Gateway.Attached\Controllers.Gateway.Attached.csproj" />
+    <ProjectReference Include="..\Controllers.Gateway\Controllers.Gateway.csproj" />
+    <ProjectReference Include="..\PollServiceProxy.Contracts\PollServiceProxy.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AJ.Std.Composition">
+      <HintPath>..\References\AJ.Std.Composition.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Composition.Contracts">
+      <HintPath>..\References\AJ.Std.Composition.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Loggers">
+      <HintPath>..\References\AJ.Std.Loggers.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Loggers.Contracts">
+      <HintPath>..\References\AJ.Std.Loggers.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Text">
+      <HintPath>..\References\AJ.Std.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Text.Contracts">
+      <HintPath>..\References\AJ.Std.Text.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Time">
+      <HintPath>..\References\AJ.Std.Time.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="cfg\BumizControllerInfos.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

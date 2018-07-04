@@ -1,0 +1,47 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v2.1",
+    "signature": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v2.1": {
+      "AJ.Std.Loggers/1.0.0": {
+        "dependencies": {
+          "AJ.Std.Loggers.Contracts": "1.0.0",
+          "AJ.Std.Text.Contracts": "1.0.0"
+        },
+        "runtime": {
+          "AJ.Std.Loggers.dll": {}
+        }
+      },
+      "AJ.Std.Loggers.Contracts/1.0.0": {
+        "runtime": {
+          "AJ.Std.Loggers.Contracts.dll": {}
+        }
+      },
+      "AJ.Std.Text.Contracts/1.0.0": {
+        "runtime": {
+          "AJ.Std.Text.Contracts.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AJ.Std.Loggers/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AJ.Std.Loggers.Contracts/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AJ.Std.Text.Contracts/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

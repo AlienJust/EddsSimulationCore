@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Objects>
+	<!--<Object Label="bmz5">
+		<Address Channel="ch3" Type="Sn" Value="5" Timeout="5"/>
+	</Object>-->
+	
+	<!--<Object Label="bmz54">-->
+		<!--<Address Channel="ch3" Type="OldSn" Value="454" Timeout="5"/>-->
+		<!--<Address Channel="ch3" Type="Ia" Value="17" Timeout="5"/>
+	</Object>-->
+	
+	<!--<Object Label="bmz8">
+		<Address Channel="ch3" Type="Ia" Value="8" Timeout="5"/>
+	</Object>-->
+	
+	<Object Label="bmz22">
+		<!--<Address Channel="ch3" Type="Sn" Value="22" Timeout="15"/>-->
+		<Address Channel="ch3" Type="Ia" Value="1" Timeout="5"/>
+	</Object>
+	
+	
+	<!--<Object Label="PulseCounter1">
+		<Address Channel="CH3" Type="Sn" Value="5" Timeout="5"/>
+	</Object>-->
+	<!--<Object Label="PulseCounter2">
+		<Address Channel="CH3" Type="OldSn" Value="0" Timeout="5"/>
+	</Object>-->
+	<!--<Object Label="PulseCounter2">
+		<Address Channel="CH3" Type="Ia" Value="37"/>
+	</Object>-->
+</Objects>

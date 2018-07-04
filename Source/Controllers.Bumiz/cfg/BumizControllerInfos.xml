@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<BumizObjects>
+	<BumizObject CurrentDataCacheTtlSeconds="5" Name="bmz5" Pulse1Correction="[p1] + 2329.0" Pulse2Correction="[p2] + 23.0" Pulse3Correction="[p3]*2.0 + 29.0" />
+	<BumizObject CurrentDataCacheTtlSeconds="5" Name="bmz54" Pulse1Correction="[p1] + 2329.0" Pulse2Correction="[p2] + 23.0" Pulse3Correction="[p3]*2.0 + 29.0" />
+	<BumizObject CurrentDataCacheTtlSeconds="5" Name="bmz8" Pulse1Correction="[p1] + 2329.0" Pulse2Correction="[p2] + 23.0" Pulse3Correction="[p3]*2.0 + 29.0" />
+	<BumizObject CurrentDataCacheTtlSeconds="2" Name="bmz22" Pulse1Correction="[p1] + 2329.0" Pulse2Correction="[p2] + 23.0" Pulse3Correction="[p3]*2.0 + 29.0" />
+	<!--<BumizObject CurrentDataCacheTtlSeconds="120" Name="PulseCounter1" Pulse1Correction="[p1] + 2329.0" Pulse2Correction="[p2] + 23.0" Pulse3Correction="[p3]*2.0 + 29.0" />-->
+	<!--<BumizObject CurrentDataCacheTtlSeconds="60" Name="PulseCounter2" Pulse1Correction="[p1]*3.0 + 234.0" Pulse2Correction="[p2] + 233.0" Pulse3Correction="[p3] + 245.0*2.0" />-->
+
+	<!--<BumizObject CurrentDataCacheTtlSeconds="60" Name="PulseCounter3" Pulse1Correction="[p1] + 235.0" Pulse2Correction="[p2] + 232.0" Pulse3Correction="[p3] + 345.0*2.0" />-->
+	<!--<BumizObject CurrentDataCacheTtlSeconds="60" Name="PulseCounter4" Pulse1Correction="[p1] + 236.0" Pulse2Correction="[p2] + 231.0" Pulse3Correction="[p3] + [p2] + [p1]" />-->
+</BumizObjects>

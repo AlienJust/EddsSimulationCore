@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\Release</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\Debug</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Audience\Audience.csproj" />
+    <ProjectReference Include="..\BumizIoManager.Contracts\BumizIoManager.Contracts.csproj" />
+    <ProjectReference Include="..\BumizNetwork.Contracts\BumizNetwork.Contracts.csproj" />
+    <ProjectReference Include="..\BumizNetwork.Shared\BumizNetwork.Shared.csproj" />
+    <ProjectReference Include="..\BumizNetwork\BumizNetwork.csproj" />
+    <ProjectReference Include="..\Commands.Contracts\Commands.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AJ.Std.Composition">
+      <HintPath>..\References\AJ.Std.Composition.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Composition.Contracts">
+      <HintPath>..\References\AJ.Std.Composition.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Concurrent">
+      <HintPath>..\References\AJ.Std.Concurrent.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Concurrent.Contracts">
+      <HintPath>..\References\AJ.Std.Concurrent.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Loggers">
+      <HintPath>..\References\AJ.Std.Loggers.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Loggers.Contracts">
+      <HintPath>..\References\AJ.Std.Loggers.Contracts.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Text">
+      <HintPath>..\References\AJ.Std.Text.dll</HintPath>
+    </Reference>
+    <Reference Include="AJ.Std.Text.Contracts">
+      <HintPath>..\References\AJ.Std.Text.Contracts.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="cfg\BumizChannels.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="cfg\BumizObjects.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

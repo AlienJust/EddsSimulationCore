@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PulseCounters>
+	<PulseCounter Name="PulseCounter1" SetupAt="2014-04-23-13-00"/>
+	<PulseCounter Name="PulseCounter2" SetupAt="2013-10-24-15-00"/>
+	<!--<PulseCounter Name="PulseCounter3" SetupAt="2013-10-24-14-00"/>-->
+	<!--<PulseCounter Name="PulseCounter4" SetupAt="2013-10-24-16-00"/>-->
+</PulseCounters>
