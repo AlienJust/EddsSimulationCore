@@ -18,86 +18,94 @@ using BumizNetwork.Contracts;
 using BumizNetwork.Shared;
 using Commands.Contracts;
 
-namespace BumizIoManager
-{
-	[Export(typeof(ICompositionPart))]
-	public class BmzIoManager : CompositionPartBase, IBumizIoManager
-	{
-		private readonly object _sync = new object();
-		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.White, Console.BackgroundColor), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
+namespace BumizIoManager {
+  [Export(typeof(ICompositionPart))]
+  public class BmzIoManager : CompositionPartBase, IBumizIoManager {
+    private readonly object _sync = new object();
 
-		private readonly Dictionary<string, IMonoChannel> _channels;
-		private readonly Dictionary<string, IBumizObjectInfo> _objects;
-		private readonly IWorker<Action> _sendQueueWorker;
-		private readonly IWorker<Action> _notifyQueueWorker;
+    private static readonly ILogger Log = new RelayMultiLogger(true,
+      new RelayLogger(Env.GlobalLog,
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
+      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.White, Console.BackgroundColor),
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+
+    private readonly Dictionary<string, IMonoChannel> _channels;
+    private readonly Dictionary<string, IBumizObjectInfo> _objects;
+    private readonly IWorker<Action> _sendQueueWorker;
+    private readonly IWorker<Action> _notifyQueueWorker;
 
 
-		public BmzIoManager() {
-			_channels = XmlFactory.GetChannelsFromXml(Path.Combine(Env.CfgPath, "BumizChannels.xml"));
-			_objects = XmlFactory.GetObjectsFromXml(Path.Combine(Env.CfgPath, "BumizObjects.xml"));
-			_sendQueueWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("BmzIoManager.SendThread", a=>a(), ThreadPriority.Normal, true, null);
-			_notifyQueueWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("BmzIoManager.NotifyThread", a=>a(), ThreadPriority.Normal, true, null);
+    public BmzIoManager() {
+      _channels = XmlFactory.GetChannelsFromXml(Path.Combine(Env.CfgPath, "BumizChannels.xml"));
+      _objects = XmlFactory.GetObjectsFromXml(Path.Combine(Env.CfgPath, "BumizObjects.xml"));
+      _sendQueueWorker =
+        new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("BmzIoManager.SendThread", a => a(),
+          ThreadPriority.Normal, true, null);
+      _notifyQueueWorker =
+        new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("BmzIoManager.NotifyThread", a => a(),
+          ThreadPriority.Normal, true, null);
 
-			Log.Log("Система обмена с объектами БУМИЗ запущена");
-		}
-		
-		private IBumizObjectInfo GetBumizObject(string objectName) {
-			lock (_sync) {
-				if (_objects.ContainsKey(objectName))
-					return _objects[objectName];
-				throw new Exception("Не удалось найти объект БУМИЗ " + objectName);
-			}
-		}
+      Log.Log("Система обмена с объектами БУМИЗ запущена");
+    }
 
-		private IMonoChannel GetBumizChannel(string channelName) {
-			lock (_sync) {
-				if (_channels.ContainsKey(channelName))
-					return _channels[channelName];
-				throw new Exception("Не удалось найти канал БУМИЗ " + channelName);
-			}
-		}
-		
-		public override string Name => "BumizIoSubSystem";
+    private IBumizObjectInfo GetBumizObject(string objectName) {
+      lock (_sync) {
+        if (_objects.ContainsKey(objectName))
+          return _objects[objectName];
+        throw new Exception("Не удалось найти объект БУМИЗ " + objectName);
+      }
+    }
 
-		public override void SetCompositionRoot(ICompositionRoot root) {
-		}
+    private IMonoChannel GetBumizChannel(string channelName) {
+      lock (_sync) {
+        if (_channels.ContainsKey(channelName))
+          return _channels[channelName];
+        throw new Exception("Не удалось найти канал БУМИЗ " + channelName);
+      }
+    }
 
-		public bool BumizObjectExist(string objectName) {
-			lock (_sync) {
-				return _objects.ContainsKey(objectName);
-			}
-		}
+    public override string Name => "BumizIoSubSystem";
 
-		public IEnumerable<string> GetAllBumizObjectNames() {
-			lock (_sync) {
-				return _objects.Select(o => o.Key);
-			}
-		}
+    public override void SetCompositionRoot(ICompositionRoot root) { }
 
-		public void SendDataAsync(string name, IInteleconCommand cmd, Action<ISendResultWithAddress> callback, IoPriority priority) {
-			_sendQueueWorker.AddWork(
-				() => {
-					try {
-						var bumizObj = GetBumizObject(name);
-						var bumizChannel = GetBumizChannel(bumizObj.ChannelName);
+    public bool BumizObjectExist(string objectName) {
+      lock (_sync) {
+        return _objects.ContainsKey(objectName);
+      }
+    }
 
-						bumizChannel.SendInteleconCommandAsync(
-							cmd,
-							bumizObj.Address,
-							bumizObj.Timeout,
-							result => _notifyQueueWorker.AddWork(() => callback(result)), 
-							priority);
-					}
-					catch (Exception ex) {
-						Log.Log("Во время отправки команды возникло исключение: " + ex);
-						_notifyQueueWorker.AddWork(() => callback(new SendingResultWithAddress(null, ex, null, 0)));
-					}
-				});
-		}
+    public IEnumerable<string> GetAllBumizObjectNames() {
+      lock (_sync) {
+        return _objects.Select(o => o.Key);
+      }
+    }
 
-		public override void BecameUnused()
-		{
-			// TODO: stop threads,
-		}
-	}
+    public void SendDataAsync(string name, IInteleconCommand cmd, Action<ISendResultWithAddress> callback,
+      IoPriority priority) {
+      _sendQueueWorker.AddWork(
+        () => {
+          try {
+            var bumizObj = GetBumizObject(name);
+            var bumizChannel = GetBumizChannel(bumizObj.ChannelName);
+
+            bumizChannel.SendInteleconCommandAsync(
+              cmd,
+              bumizObj.Address,
+              bumizObj.Timeout,
+              result => _notifyQueueWorker.AddWork(() => callback(result)),
+              priority);
+          }
+          catch (Exception ex) {
+            Log.Log("Во время отправки команды возникло исключение: " + ex);
+            _notifyQueueWorker.AddWork(() => callback(new SendingResultWithAddress(null, ex, null, 0)));
+          }
+        });
+    }
+
+    public override void BecameUnused() {
+      // TODO: stop threads,
+    }
+  }
 }

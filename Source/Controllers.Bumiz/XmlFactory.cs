@@ -8,43 +8,49 @@ using AJ.Std.Text.Contracts;
 using Audience;
 
 namespace Controllers.Bumiz {
-	internal static class XmlFactory {
-		private static readonly ILogger Log = new RelayMultiLogger(
-			true, 
-			new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), 
-			new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor), 
-				new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
+  internal static class XmlFactory {
+    private static readonly ILogger Log = new RelayMultiLogger(
+      true,
+      new RelayLogger(Env.GlobalLog,
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
+      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor),
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
-		public static IEnumerable<IBumizControllerInfo> GetBumizObjectInfosFromXml(string filename) {
-			var bumizControllerInfos = new List<IBumizControllerInfo>();
-			Log.Log("Построение информации об объектах БУМИЗ из XML файла конфигурации...");
+    public static IEnumerable<IBumizControllerInfo> GetBumizObjectInfosFromXml(string filename) {
+      var bumizControllerInfos = new List<IBumizControllerInfo>();
+      Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ...");
 
-			var docChannels = XDocument.Load(filename);
-			{
-				var bumizObjectsElement = docChannels.Element("BumizObjects");
-				if (bumizObjectsElement != null) {
-					var bumizObjectElements = bumizObjectsElement.Elements("BumizObject");
+      var docChannels = XDocument.Load(filename);
+      {
+        var bumizObjectsElement = docChannels.Element("BumizObjects");
+        if (bumizObjectsElement != null) {
+          var bumizObjectElements = bumizObjectsElement.Elements("BumizObject");
 
-					foreach (var bumizObjectElement in bumizObjectElements) {
-						try {
-							var bumizObjectName = bumizObjectElement.Attribute("Name").Value;
-							var currentDataCacheTtlSeconds = int.Parse(bumizObjectElement.Attribute("CurrentDataCacheTtlSeconds").Value);
-							var pulses1Expression = bumizObjectElement.Attribute("Pulse1Correction").Value;
-							var pulses2Expression = bumizObjectElement.Attribute("Pulse2Correction").Value;
-							var pulses3Expression = bumizObjectElement.Attribute("Pulse3Correction").Value;
+          foreach (var bumizObjectElement in bumizObjectElements) {
+            try {
+              var bumizObjectName = bumizObjectElement.Attribute("Name").Value;
+              var currentDataCacheTtlSeconds =
+                int.Parse(bumizObjectElement.Attribute("CurrentDataCacheTtlSeconds").Value);
+              var pulses1Expression = bumizObjectElement.Attribute("Pulse1Correction").Value;
+              var pulses2Expression = bumizObjectElement.Attribute("Pulse2Correction").Value;
+              var pulses3Expression = bumizObjectElement.Attribute("Pulse3Correction").Value;
 
-							bumizControllerInfos.Add(new BumizControllerInfo(bumizObjectName, currentDataCacheTtlSeconds, pulses1Expression, pulses2Expression, pulses3Expression));
-							Log.Log("Информация об объекте БУМИЗ " + bumizObjectName + " инициализирована");
-						}
-						catch (Exception ex) {
-							Log.Log("Не удалось инициализировать информацию об объекте БУМИЗ");
-							Log.Log(ex.ToString());
-						}
-					}
-				}
-			}
-			Log.Log("Информация об объектах БУМИЗ была загружена из XML файла, число объектов: " + bumizControllerInfos.Count);
-			return bumizControllerInfos;
-		}
-	}
+              bumizControllerInfos.Add(new BumizControllerInfo(bumizObjectName, currentDataCacheTtlSeconds,
+                pulses1Expression, pulses2Expression, pulses3Expression));
+              Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ " + bumizObjectName + " пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+            }
+            catch (Exception ex) {
+              Log.Log("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ");
+              Log.Log(ex.ToString());
+            }
+          }
+        }
+      }
+      Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: " +
+              bumizControllerInfos.Count);
+      return bumizControllerInfos;
+    }
+  }
 }

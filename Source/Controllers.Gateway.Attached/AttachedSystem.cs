@@ -6,25 +6,25 @@ using AJ.Std.Composition.Contracts;
 using Audience;
 using GatewayAttachedControllers;
 
-namespace Controllers.Gateway.Attached
-{
-	[Export(typeof(ICompositionPart))]
-	class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
-		public AttachedControllersInfoSystem() {
-			AttachedControllerInfos = XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));
-		}
+namespace Controllers.Gateway.Attached {
+  [Export(typeof(ICompositionPart))]
+  class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
+    public AttachedControllersInfoSystem() {
+      AttachedControllerInfos =
+        XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));
+    }
 
-		public IEnumerable<IAttachedControllerInfo> AttachedControllerInfos { get; }
+    public IEnumerable<IAttachedControllerInfo> AttachedControllerInfos { get; }
 
 
-		public override void SetCompositionRoot(ICompositionRoot root) {
-			// Get all needed c.parts with adding refs to them
-		}
+    public override void SetCompositionRoot(ICompositionRoot root) {
+      // Get all needed c.parts with adding refs to them
+    }
 
-		public override string Name => "GatewayAttachedControllers";
-		public override void BecameUnused()
-		{
-			// Unload all c.parts here
-		}
-	}
+    public override string Name => "GatewayAttachedControllers";
+
+    public override void BecameUnused() {
+      // Unload all c.parts here
+    }
+  }
 }

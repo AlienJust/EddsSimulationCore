@@ -18,160 +18,180 @@ using Controllers.Gateway.Attached;
 using PollServiceProxy.Contracts;
 
 namespace Controllers.Bumiz {
-	[Export(typeof(ICompositionPart))]
-	public class BumizControllersSubSystem : CompositionPartBase, ISubSystem {
-		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkCyan, Console.BackgroundColor), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
+  [Export(typeof(ICompositionPart))]
+  public class BumizControllersSubSystem : CompositionPartBase, ISubSystem {
+    private static readonly ILogger Log = new RelayMultiLogger(true,
+      new RelayLogger(Env.GlobalLog,
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
+      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkCyan, Console.BackgroundColor),
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
-		private ICompositionPart _bumizIoManagerPart;
-		private IBumizIoManager _bumizIoManager;
+    private ICompositionPart _bumizIoManagerPart;
+    private IBumizIoManager _bumizIoManager;
 
-		private ICompositionPart _scadaPollGatewayPart;
-		private IPollGateway _scadaPollGateway;
+    private ICompositionPart _scadaPollGatewayPart;
+    private IPollGateway _scadaPollGateway;
 
-		private ICompositionPart _pulseCountersDataStoragePart;
-		private IPulseCounterDataStorageHolder _pulseCountersDataStorage;
+    private ICompositionPart _pulseCountersDataStoragePart;
+    private IPulseCounterDataStorageHolder _pulseCountersDataStorage;
 
-		private ICompositionPart _attachedControllersInfoSystemPart;
-		private IAttachedControllersInfoSystem _attachedControllersInfoSystem;
+    private ICompositionPart _attachedControllersInfoSystemPart;
+    private IAttachedControllersInfoSystem _attachedControllersInfoSystem;
 
-		private ICompositionPart _gatewayControllesManagerPart;
-		private IGatewayControllerInfosSystem _gatewayControllesManager;
-
-
-		private ICompositionRoot _compositionRoot;
-		private readonly IEnumerable<IBumizControllerInfo> _bumizControllerInfos;
-		private readonly List<IController> _bumizControllers;
+    private ICompositionPart _gatewayControllesManagerPart;
+    private IGatewayControllerInfosSystem _gatewayControllesManager;
 
 
-		public string SystemName => "BumizControllers";
+    private ICompositionRoot _compositionRoot;
+    private readonly IEnumerable<IBumizControllerInfo> _bumizControllerInfos;
+    private readonly List<IController> _bumizControllers;
 
-		public BumizControllersSubSystem() {
-			_bumizControllerInfos = XmlFactory.GetBumizObjectInfosFromXml(Path.Combine(Env.CfgPath, "BumizControllerInfos.xml"));
-			_bumizControllers = new List<IController>();
-		}
 
-		public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, byte[] data, Action notifyOperationComplete, Action<int, IEnumerable<byte>> sendReplyAction) {
-			bool isBumizControllerFound = false; // Если найден, то контроллер должен гарантировать выполнение вызова notifyOperationComplete
-			try {
-				Log.Log("Поступили данные от шлюза для объекта " + subObjectName + ", код команды = " + commandCode + ", данные: " + data.ToText());
-				if (commandCode == 6 && data.Length >= 8) {
-					var channel = data[0];
-					var type = data[1];
-					var number = data[2];
-					Log.Log("Код команды и длина данных позволяют работать дальше, канал=" + channel + ", тип=" + type + ", номер=" + number);
+    public string SystemName => "BumizControllers";
 
-					if (type != 13) {
-						Log.Log("Тип счетчика не равен 13, обработка такой команды подсистемой БУМИЗ контроллеров не осуществляется");
-						return;
-					}
+    public BumizControllersSubSystem() {
+      _bumizControllerInfos =
+        XmlFactory.GetBumizObjectInfosFromXml(Path.Combine(Env.CfgPath, "BumizControllerInfos.xml"));
+      _bumizControllers = new List<IController>();
+    }
 
-					Log.Log("Поиск объекта-шлюза...");
-					foreach (var gatewayControllerInfo in _gatewayControllesManager.GatewayControllerInfos) {
-						Log.Log("Проверка объекта " + gatewayControllerInfo.Name);
-						if (gatewayControllerInfo.Name == subObjectName) {
-							Log.Log("Объект-шлюз найден, поиск подключенного объекта...");
-							foreach (var attachedControllerInfo in _attachedControllersInfoSystem.AttachedControllerInfos) {
-								Log.Log("Проверка подключаемого объекта " + attachedControllerInfo.Name);
-								if (attachedControllerInfo.Channel == channel && attachedControllerInfo.Type == type && attachedControllerInfo.Number == number) {
-									Log.Log("Подключаемый объект найден, поиск соответствующего объекта БУМИЗ...");
-									var bumizObjName = attachedControllerInfo.Name;
+    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, byte[] data,
+      Action notifyOperationComplete, Action<int, IEnumerable<byte>> sendReplyAction) {
+      bool
+        isBumizControllerFound =
+          false; // Если найден, то контроллер должен гарантировать выполнение вызова notifyOperationComplete
+      try {
+        Log.Log("Поступили данные от шлюза для объекта " + subObjectName + ", код команды = " + commandCode +
+                ", данные: " + data.ToText());
+        if (commandCode == 6 && data.Length >= 8) {
+          var channel = data[0];
+          var type = data[1];
+          var number = data[2];
+          Log.Log("Код команды и длина данных позволяют работать дальше, канал=" + channel + ", тип=" + type +
+                  ", номер=" + number);
 
-									foreach (var bumizController in _bumizControllers) {
-										Log.Log("Проверка объекта БУМИЗ " + bumizController.Name);
-										if (bumizObjName == bumizController.Name) {
-											Log.Log("Объект БУМИЗ найден, запрос данных от объекта...");
-											isBumizControllerFound = true;
-											//IGatewayControllerInfo info = gatewayControllerInfo; // для замыкания
-											bumizController.GetDataInCallback(
-												commandCode,
-												data,
-												(exception, bytes) => {
-													try {
-														if (exception == null) {
-															Log.Log("Данные от объекта БУМИЗ получены: " + bytes.ToText()); // TODO remove double enum
-															sendReplyAction((byte)(commandCode + 10), bytes.ToArray());
-															Log.Log("Данные от объекта БУМИЗ были отправлены в шлюз");
-															return;
-														}
-														Log.Log("Ошибка при запросе к БУМИЗ контроллеру: " + exception);
-													}
-													catch (Exception ex) {
-														Log.Log("При обработке ответа от объекта БУМИЗ возникло исключение: " + ex);
+          if (type != 13) {
+            Log.Log(
+              "Тип счетчика не равен 13, обработка такой команды подсистемой БУМИЗ контроллеров не осуществляется");
+            return;
+          }
 
-													}
-													finally {
-														notifyOperationComplete(); // выполняется в другом потоке
-													}
-												});
-											break; // Далее связный с подключаемым объектом контроллер БУМИЗ искать не нужно
-										}
-									}
-									break; // Далее подключаемый к шлюзу объект искать не нужно
-								}
-							}
-							break; // далее шлюз искать не нужно
-						}
-					}
-				}
-			}
-			catch (Exception ex) {
-				Log.Log("Произошла ошибка во время работы с полученными данными: " + ex);
-			}
-			finally {
-				if (!isBumizControllerFound) {
-					notifyOperationComplete();
-				}
-			}
-		}
+          Log.Log("Поиск объекта-шлюза...");
+          foreach (var gatewayControllerInfo in _gatewayControllesManager.GatewayControllerInfos) {
+            Log.Log("Проверка объекта " + gatewayControllerInfo.Name);
+            if (gatewayControllerInfo.Name == subObjectName) {
+              Log.Log("Объект-шлюз найден, поиск подключенного объекта...");
+              foreach (var attachedControllerInfo in _attachedControllersInfoSystem.AttachedControllerInfos) {
+                Log.Log("Проверка подключаемого объекта " + attachedControllerInfo.Name);
+                if (attachedControllerInfo.Channel == channel && attachedControllerInfo.Type == type &&
+                    attachedControllerInfo.Number == number) {
+                  Log.Log("Подключаемый объект найден, поиск соответствующего объекта БУМИЗ...");
+                  var bumizObjName = attachedControllerInfo.Name;
 
-		public override void SetCompositionRoot(ICompositionRoot root) {
-			_compositionRoot = root;
+                  foreach (var bumizController in _bumizControllers) {
+                    Log.Log("Проверка объекта БУМИЗ " + bumizController.Name);
+                    if (bumizObjName == bumizController.Name) {
+                      Log.Log("Объект БУМИЗ найден, запрос данных от объекта...");
+                      isBumizControllerFound = true;
+                      //IGatewayControllerInfo info = gatewayControllerInfo; // для замыкания
+                      bumizController.GetDataInCallback(
+                        commandCode,
+                        data,
+                        (exception, bytes) => {
+                          try {
+                            if (exception == null) {
+                              Log.Log("Данные от объекта БУМИЗ получены: " + bytes.ToText()); // TODO remove double enum
+                              sendReplyAction((byte) (commandCode + 10), bytes.ToArray());
+                              Log.Log("Данные от объекта БУМИЗ были отправлены в шлюз");
+                              return;
+                            }
 
-			_scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-			_scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-			if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
-			_scadaPollGatewayPart.AddRef();
+                            Log.Log("Ошибка при запросе к БУМИЗ контроллеру: " + exception);
+                          }
+                          catch (Exception ex) {
+                            Log.Log("При обработке ответа от объекта БУМИЗ возникло исключение: " + ex);
+                          }
+                          finally {
+                            notifyOperationComplete(); // выполняется в другом потоке
+                          }
+                        });
+                      break; // Далее связный с подключаемым объектом контроллер БУМИЗ искать не нужно
+                    }
+                  }
 
-			_bumizIoManagerPart = _compositionRoot.GetPartByName("BumizIoSubSystem");
-			_bumizIoManager = _bumizIoManagerPart as IBumizIoManager;
-			if (_bumizIoManager == null) throw new Exception("Не удалось найти BumizIoSubSystem через composition root");
-			_bumizIoManagerPart.AddRef();
+                  break; // Далее подключаемый к шлюзу объект искать не нужно
+                }
+              }
 
-			_pulseCountersDataStoragePart = _compositionRoot.GetPartByName("BumizEvenSubSystem.PulseCounter");
-			_pulseCountersDataStorage = _pulseCountersDataStoragePart as IPulseCounterDataStorageHolder;
-			if (_pulseCountersDataStorage == null) throw new Exception("Не удалось найти держатель хранилища импульсных счетчиков через composition root");
-			_pulseCountersDataStoragePart.AddRef();
+              break; // далее шлюз искать не нужно
+            }
+          }
+        }
+      }
+      catch (Exception ex) {
+        Log.Log("Произошла ошибка во время работы с полученными данными: " + ex);
+      }
+      finally {
+        if (!isBumizControllerFound) {
+          notifyOperationComplete();
+        }
+      }
+    }
 
-			_attachedControllersInfoSystemPart = _compositionRoot.GetPartByName("GatewayAttachedControllers");
-			_attachedControllersInfoSystem = _attachedControllersInfoSystemPart as IAttachedControllersInfoSystem;
-			if (_attachedControllersInfoSystem == null) throw new Exception("Не удалось найти GatewayAttachedControllers через composition root");
-			_attachedControllersInfoSystemPart.AddRef();
+    public override void SetCompositionRoot(ICompositionRoot root) {
+      _compositionRoot = root;
 
-			_gatewayControllesManagerPart = _compositionRoot.GetPartByName("GatewayControllers");
-			_gatewayControllesManager = _gatewayControllesManagerPart as IGatewayControllerInfosSystem;
-			if (_gatewayControllesManager == null) throw new Exception("Не удалось найти GatewayControllers через composition root");
-			_gatewayControllesManagerPart.AddRef();
+      _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
+      _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
+      if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+      _scadaPollGatewayPart.AddRef();
 
-			foreach (var bumizControllerInfo in _bumizControllerInfos) {
-				if (_bumizIoManager.BumizObjectExist(bumizControllerInfo.Name)) {
-					_bumizControllers.Add(new BumizController(_bumizIoManager, _pulseCountersDataStorage, bumizControllerInfo));
-				}
-				else {
-					Log.Log("Не удалось найти информацию о связи по сети БУМИЗ для контроллера: " + bumizControllerInfo.Name);
-				}
-			}
+      _bumizIoManagerPart = _compositionRoot.GetPartByName("BumizIoSubSystem");
+      _bumizIoManager = _bumizIoManagerPart as IBumizIoManager;
+      if (_bumizIoManager == null) throw new Exception("Не удалось найти BumizIoSubSystem через composition root");
+      _bumizIoManagerPart.AddRef();
 
-			Log.Log("Подсистема подключаемых контроллеров БУМИЗ инициализирована, число контроллеров: " + _bumizControllers.Count);
-		}
+      _pulseCountersDataStoragePart = _compositionRoot.GetPartByName("BumizEvenSubSystem.PulseCounter");
+      _pulseCountersDataStorage = _pulseCountersDataStoragePart as IPulseCounterDataStorageHolder;
+      if (_pulseCountersDataStorage == null)
+        throw new Exception("Не удалось найти держатель хранилища импульсных счетчиков через composition root");
+      _pulseCountersDataStoragePart.AddRef();
 
-		public override string Name => "BumizControllers";
+      _attachedControllersInfoSystemPart = _compositionRoot.GetPartByName("GatewayAttachedControllers");
+      _attachedControllersInfoSystem = _attachedControllersInfoSystemPart as IAttachedControllersInfoSystem;
+      if (_attachedControllersInfoSystem == null)
+        throw new Exception("Не удалось найти GatewayAttachedControllers через composition root");
+      _attachedControllersInfoSystemPart.AddRef();
 
-		public override void BecameUnused() {
-			_scadaPollGatewayPart.Release();
-			_bumizIoManagerPart.Release();
-			_pulseCountersDataStoragePart.Release();
-			_attachedControllersInfoSystemPart.Release();
-			_gatewayControllesManagerPart.Release();
-		}
-	}
+      _gatewayControllesManagerPart = _compositionRoot.GetPartByName("GatewayControllers");
+      _gatewayControllesManager = _gatewayControllesManagerPart as IGatewayControllerInfosSystem;
+      if (_gatewayControllesManager == null)
+        throw new Exception("Не удалось найти GatewayControllers через composition root");
+      _gatewayControllesManagerPart.AddRef();
+
+      foreach (var bumizControllerInfo in _bumizControllerInfos) {
+        if (_bumizIoManager.BumizObjectExist(bumizControllerInfo.Name)) {
+          _bumizControllers.Add(new BumizController(_bumizIoManager, _pulseCountersDataStorage, bumizControllerInfo));
+        }
+        else {
+          Log.Log("Не удалось найти информацию о связи по сети БУМИЗ для контроллера: " + bumizControllerInfo.Name);
+        }
+      }
+
+      Log.Log("Подсистема подключаемых контроллеров БУМИЗ инициализирована, число контроллеров: " +
+              _bumizControllers.Count);
+    }
+
+    public override string Name => "BumizControllers";
+
+    public override void BecameUnused() {
+      _scadaPollGatewayPart.Release();
+      _bumizIoManagerPart.Release();
+      _pulseCountersDataStoragePart.Release();
+      _attachedControllersInfoSystemPart.Release();
+      _gatewayControllesManagerPart.Release();
+    }
+  }
 }

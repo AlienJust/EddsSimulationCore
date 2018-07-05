@@ -1,5 +1,5 @@
 namespace Bumiz.Apply.PulseCounterArchiveReader {
-	public interface IPulseCounterDataStorageHolder {
-		IPulseCounterDataStorage Storage { get; }
-	}
+  public interface IPulseCounterDataStorageHolder {
+    IPulseCounterDataStorage Storage { get; }
+  }
 }

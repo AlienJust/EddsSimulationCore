@@ -1,20 +1,20 @@
 using System;
 
 namespace Commands.Bumiz.CounterSe102 {
-	public static class TariffProgramExtensions {
-		public static string GetDescription(this TariffProgramType tp) {
-			switch (tp) {
-				case TariffProgramType.Workday:
-					return "Рабочий день";
-				case TariffProgramType.SpecialDay:
-					return "Особый день";
-				case TariffProgramType.Saturday:
-					return "Субботний день";
-				case TariffProgramType.Sunday:
-					return "Воскресный день";
+  public static class TariffProgramExtensions {
+    public static string GetDescription(this TariffProgramType tp) {
+      switch (tp) {
+        case TariffProgramType.Workday:
+          return "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ";
+        case TariffProgramType.SpecialDay:
+          return "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ";
+        case TariffProgramType.Saturday:
+          return "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ";
+        case TariffProgramType.Sunday:
+          return "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ";
+      }
 
-			}
-			throw new Exception("Cannot get description");
-		}
-	}
+      throw new Exception("Cannot get description");
+    }
+  }
 }

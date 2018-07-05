@@ -3,34 +3,34 @@ using ScadaClient.Contracts;
 using ScadaClient.Udp;
 
 namespace PollServiceProxy {
+  /// <summary>
+  /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  /// </summary>
+  internal class NamedScadaLinkSimple : INamedScadaLink {
+    private readonly IScadaClient _link;
 
-	/// <summary>
-	/// Простейшая реализация
-	/// </summary>
-	internal class NamedScadaLinkSimple : INamedScadaLink {
-		private readonly IScadaClient _link;
+    public event EventHandler<DataReceivedEventArgs> DataReceived;
+    public event EventHandler<DisconnectedEventArgs> Disconnected;
 
-		public event EventHandler<DataReceivedEventArgs> DataReceived;
-		public event EventHandler<DisconnectedEventArgs> Disconnected;
+    public NamedScadaLinkSimple(string name, IScadaClient link) {
+      Name = name;
+      _link = link ?? throw new NullReferenceException(
+                "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ IScadaClient пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ null");
+      _link.DataReceived += LinkOnDataReceived;
+      _link.Disconnected += LinkOnDisconnected;
+    }
 
-		public NamedScadaLinkSimple(string name, IScadaClient link) {
-			Name = name;
-			_link = link ?? throw new NullReferenceException("Ошибка создания объекта IScadaClient не может иметь значения null");
-			_link.DataReceived += LinkOnDataReceived;
-			_link.Disconnected += LinkOnDisconnected;
-		}
+    private void LinkOnDisconnected(object sender, DisconnectedEventArgs eventArgs) {
+      Disconnected.SafeInvoke(this, eventArgs);
+    }
 
-		private void LinkOnDisconnected(object sender, DisconnectedEventArgs eventArgs) {
-			Disconnected.SafeInvoke(this, eventArgs);
-		}
-
-		private void LinkOnDataReceived(object sender, DataReceivedEventArgs eventArgs) {
-			DataReceived.SafeInvoke(this, eventArgs);
-		}
+    private void LinkOnDataReceived(object sender, DataReceivedEventArgs eventArgs) {
+      DataReceived.SafeInvoke(this, eventArgs);
+    }
 
 
-		public string Name { get; }
+    public string Name { get; }
 
-		public IScadaClient Link => _link;
-	}
+    public IScadaClient Link => _link;
+  }
 }

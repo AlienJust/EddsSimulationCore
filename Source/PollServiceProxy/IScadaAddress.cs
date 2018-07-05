@@ -1,6 +1,6 @@
 namespace PollServiceProxy {
-	public interface IScadaAddress {
-		string LinkName { get; }
-		int NetAddress { get; }
-	}
+  public interface IScadaAddress {
+    string LinkName { get; }
+    int NetAddress { get; }
+  }
 }

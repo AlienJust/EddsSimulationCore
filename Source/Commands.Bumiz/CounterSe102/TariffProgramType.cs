@@ -1,23 +1,23 @@
 namespace Commands.Bumiz.CounterSe102 {
-	public enum TariffProgramType : byte {
-		/// <summary>
-		/// Рабочий день
-		/// </summary>
-		Workday = 0x01,
+  public enum TariffProgramType : byte {
+    /// <summary>
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    /// </summary>
+    Workday = 0x01,
 
-		/// <summary>
-		/// Суббота
-		/// </summary>
-		Saturday = 0x02,
+    /// <summary>
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// </summary>
+    Saturday = 0x02,
 
-		/// <summary>
-		/// Воскресение
-		/// </summary>
-		Sunday = 0x03,
+    /// <summary>
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// </summary>
+    Sunday = 0x03,
 
-		/// <summary>
-		/// Особый день
-		/// </summary>
-		SpecialDay = 0x00
-	}
+    /// <summary>
+    /// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    /// </summary>
+    SpecialDay = 0x00
+  }
 }

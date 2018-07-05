@@ -1,42 +1,40 @@
 using System;
 
 namespace Commands.Bumiz.Intelecon {
-	public struct ReadSettingsCommandResult {
-		public ReadSettingsCommandResult(ushort inteleconAddr, byte controlWord, byte thresholdCurrent, byte thresholdTime, byte protectionTimeout, byte autoPowerOnTimeout)
-			: this()
-		{
-			InteleconAddr = inteleconAddr;
-			ControlWord = controlWord;
-			ThresholdCurrent = thresholdCurrent;
-			ThresholdTime = thresholdTime;
-			ProtectionTimeout = protectionTimeout;
-			AutoPowerOnTimeout = autoPowerOnTimeout;
-		}
+  public struct ReadSettingsCommandResult {
+    public ReadSettingsCommandResult(ushort inteleconAddr, byte controlWord, byte thresholdCurrent, byte thresholdTime,
+      byte protectionTimeout, byte autoPowerOnTimeout)
+      : this() {
+      InteleconAddr = inteleconAddr;
+      ControlWord = controlWord;
+      ThresholdCurrent = thresholdCurrent;
+      ThresholdTime = thresholdTime;
+      ProtectionTimeout = protectionTimeout;
+      AutoPowerOnTimeout = autoPowerOnTimeout;
+    }
 
 
-		public byte AutoPowerOnTimeout { get; }
+    public byte AutoPowerOnTimeout { get; }
 
-		public byte ProtectionTimeout { get; }
+    public byte ProtectionTimeout { get; }
 
-		public byte ThresholdTime { get; }
+    public byte ThresholdTime { get; }
 
-		public byte ThresholdCurrent { get; }
+    public byte ThresholdCurrent { get; }
 
-		public byte ControlWord { get; }
+    public byte ControlWord { get; }
 
-		public ushort InteleconAddr { get; }
+    public ushort InteleconAddr { get; }
 
-		public override string ToString()
-		{
-			
-			string result = string.Empty;
-			result += "Адрес Интелекон: \t" + InteleconAddr + Environment.NewLine;
-			result += "Контрольное слово: \t" + ControlWord + Environment.NewLine;
-			result += "Порог отключения по току: \t" + ThresholdCurrent + Environment.NewLine;
-			result += "Время отключения: \t" + ThresholdTime + Environment.NewLine;
-			result += "Таймаут защиты: \t" + ProtectionTimeout + Environment.NewLine;
-			result += "Таймаут автоматического отключения: \t" + AutoPowerOnTimeout + Environment.NewLine;
-			return result;
-		}
-	}
+    public override string ToString() {
+      string result = string.Empty;
+      result += "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: \t" + InteleconAddr + Environment.NewLine;
+      result += "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ: \t" + ControlWord + Environment.NewLine;
+      result += "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ: \t" + ThresholdCurrent + Environment.NewLine;
+      result += "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: \t" + ThresholdTime + Environment.NewLine;
+      result += "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: \t" + ProtectionTimeout + Environment.NewLine;
+      result += "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: \t" + AutoPowerOnTimeout + Environment.NewLine;
+      return result;
+    }
+  }
 }

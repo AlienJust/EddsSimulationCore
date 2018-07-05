@@ -1,5 +1,5 @@
 namespace Controllers.Gateway {
-	public interface IGatewayControllerInfo {
-		string Name { get; }
-	}
+  public interface IGatewayControllerInfo {
+    string Name { get; }
+  }
 }

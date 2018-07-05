@@ -12,104 +12,110 @@ using BumizNetwork.Contracts;
 using BumizNetwork.SerialChannel;
 
 namespace BumizIoManager {
-	internal static class XmlFactory {
-		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkMagenta, ConsoleColor.Black), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
-		public static Dictionary<string, IMonoChannel> GetChannelsFromXml(string filename) {
-			var channels = new Dictionary<string, IMonoChannel>();
+  internal static class XmlFactory {
+    private static readonly ILogger Log = new RelayMultiLogger(true,
+      new RelayLogger(Env.GlobalLog,
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
+      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkMagenta, ConsoleColor.Black),
+        new ChainedFormatter(new ITextFormatter[]
+          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
-			//TODO: make static factory for each iface type
-			Log.Log("Построение каналов БУМИЗ из XML файла конфигурации...");
-			var docChannels = XDocument.Load(filename);
-			{
-				var rootNode = docChannels.Element("BumizChannels");
-				if (rootNode != null) {
-					var comChannels = rootNode.Elements("ComPortChannel");
-					foreach (var comChannel in comChannels) {
-						try {
-							var channelLabel = comChannel.Attribute("Label").Value;
-							var comName = comChannel.Attribute("PortName").Value;
-							var baudRate = int.Parse(comChannel.Attribute("BaudRate").Value);
-							var onlineCheckTimeSeconds = int.Parse(comChannel.Attribute("OnlineCheckTimeSeconds").Value);
-							var checkNetAddress = bool.Parse(comChannel.Attribute("CheckNetAddress").Value);
+    public static Dictionary<string, IMonoChannel> GetChannelsFromXml(string filename) {
+      var channels = new Dictionary<string, IMonoChannel>();
 
-							Log.Log("Метка канала из XML = " + channelLabel);
-							Log.Log("Название COM порта из XML = " + comName);
-							Log.Log("Скорость обмена порта из XML = " + baudRate);
+      //TODO: make static factory for each iface type
+      Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ...");
+      var docChannels = XDocument.Load(filename);
+      {
+        var rootNode = docChannels.Element("BumizChannels");
+        if (rootNode != null) {
+          var comChannels = rootNode.Elements("ComPortChannel");
+          foreach (var comChannel in comChannels) {
+            try {
+              var channelLabel = comChannel.Attribute("Label").Value;
+              var comName = comChannel.Attribute("PortName").Value;
+              var baudRate = int.Parse(comChannel.Attribute("BaudRate").Value);
+              var onlineCheckTimeSeconds = int.Parse(comChannel.Attribute("OnlineCheckTimeSeconds").Value);
+              var checkNetAddress = bool.Parse(comChannel.Attribute("CheckNetAddress").Value);
 
-							var subChannel = new SerialChannelSimple(comName, baudRate, 15);
-							Log.Log("Канал последовательного обмена SerialChannelSimple согласно XML создан успешно");
+              Log.Log("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML = " + channelLabel);
+              Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ COM пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML = " + comName);
+              Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML = " + baudRate);
 
-							var channel = new BumizAdvancedNetwork(subChannel, null, onlineCheckTimeSeconds, checkNetAddress);
-							Log.Log("BumizAdvancedNetwork базирующаяся на SerialChannelSimple была успешно создана");
-							
-							channels.Add(channelLabel, channel);
-							Log.Log("Канал инициализирован: порт=" + comName + ", скорость=" + baudRate + ", в системе канал теперь известен как: " + channelLabel);
-						}
-						catch (Exception ex) {
-							Log.Log("Не удалось инициализировать последовательный канал БУМИЗ");
-							Log.Log(ex.ToString());
-						}
-					}
-				}
-			}
-			Log.Log("Каналы построены, количество каналов = " + channels.Count);
-			return channels;
-		}
-		public static Dictionary<string, IBumizObjectInfo> GetObjectsFromXml(string filename)
-		{
-			var objects = new Dictionary<string, IBumizObjectInfo>();
-			//_clients = new Dictionary<string, IScadaClient>();
-			//_scadaObjects = new Dictionary<string, IScadaObjectInfo>();
+              var subChannel = new SerialChannelSimple(comName, baudRate, 15);
+              Log.Log("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ SerialChannelSimple пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 
-			//TODO: make static factory for each iface type
-			Log.Log("Инициализация объектов БУМИЗ согласно XML конфигурации...");
-			var docChannels = XDocument.Load(filename);
-			{
-				var rootNode = docChannels.Element("Objects");
-				if (rootNode != null)
-				{
-					var objectNodes = rootNode.Elements("Object");
-					foreach (var objNode in objectNodes)
-					{
-						try
-						{
-							var objectName = objNode.Attribute("Label").Value;
-							var adrNode = objNode.Element("Address");
-							var channelName = adrNode.Attribute("Channel").Value;
-							var addressTypeStr = adrNode.Attribute("Type").Value.ToLower();
-							
-							NetIdRetrieveType addressType;
-							switch (addressTypeStr) {
-								case "sn":
-									addressType = NetIdRetrieveType.SerialNumber;
-									break;
-								case "ia":
-									addressType = NetIdRetrieveType.InteleconAddress;
-									break;
-								case "oldsn":
-									addressType = NetIdRetrieveType.OldProtocolSerialNumber;
-									break;
-								default:
-									throw new Exception("Не поддерживаемый тип адресации");
-							}
+              var channel = new BumizAdvancedNetwork(subChannel, null, onlineCheckTimeSeconds, checkNetAddress);
+              Log.Log("BumizAdvancedNetwork пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ SerialChannelSimple пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 
-							var addressValue = int.Parse(adrNode.Attribute("Value").Value);
-							var timeout = int.Parse(adrNode.Attribute("Timeout").Value);
-							
-							var objectInfo = new BumizObjectInfo(objectName, channelName, new ObjectAddress(addressType, (ushort) addressValue), timeout);
-							objects.Add(objectName, objectInfo);
-							Log.Log("Объект БУМИЗ построен: " + objectName + "@" + channelName + ":[" + objectInfo.Address + "]" + ", таймаут=" + timeout);
-						}
-						catch (Exception ex)
-						{
-							Log.Log("Не удалось построить объект БУМИЗ из XML");
-							Log.Log(ex.ToString());
-						}
-					}
-				}
-			}
-			Log.Log("Объекты БУМИЗ инициализированы, количество объектов = " + objects.Count);
-			return objects;
-		}
-	}
+              channels.Add(channelLabel, channel);
+              Log.Log("пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅ=" + comName + ", пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ=" + baudRate +
+                      ", пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ: " + channelLabel);
+            }
+            catch (Exception ex) {
+              Log.Log("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ");
+              Log.Log(ex.ToString());
+            }
+          }
+        }
+      }
+      Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ = " + channels.Count);
+      return channels;
+    }
+
+    public static Dictionary<string, IBumizObjectInfo> GetObjectsFromXml(string filename) {
+      var objects = new Dictionary<string, IBumizObjectInfo>();
+      //_clients = new Dictionary<string, IScadaClient>();
+      //_scadaObjects = new Dictionary<string, IScadaObjectInfo>();
+
+      //TODO: make static factory for each iface type
+      Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ XML пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ...");
+      var docChannels = XDocument.Load(filename);
+      {
+        var rootNode = docChannels.Element("Objects");
+        if (rootNode != null) {
+          var objectNodes = rootNode.Elements("Object");
+          foreach (var objNode in objectNodes) {
+            try {
+              var objectName = objNode.Attribute("Label").Value;
+              var adrNode = objNode.Element("Address");
+              var channelName = adrNode.Attribute("Channel").Value;
+              var addressTypeStr = adrNode.Attribute("Type").Value.ToLower();
+
+              NetIdRetrieveType addressType;
+              switch (addressTypeStr) {
+                case "sn":
+                  addressType = NetIdRetrieveType.SerialNumber;
+                  break;
+                case "ia":
+                  addressType = NetIdRetrieveType.InteleconAddress;
+                  break;
+                case "oldsn":
+                  addressType = NetIdRetrieveType.OldProtocolSerialNumber;
+                  break;
+                default:
+                  throw new Exception("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
+              }
+
+              var addressValue = int.Parse(adrNode.Attribute("Value").Value);
+              var timeout = int.Parse(adrNode.Attribute("Timeout").Value);
+
+              var objectInfo = new BumizObjectInfo(objectName, channelName,
+                new ObjectAddress(addressType, (ushort) addressValue), timeout);
+              objects.Add(objectName, objectInfo);
+              Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: " + objectName + "@" + channelName + ":[" + objectInfo.Address + "]" +
+                      ", пїЅпїЅпїЅпїЅпїЅпїЅпїЅ=" + timeout);
+            }
+            catch (Exception ex) {
+              Log.Log("пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ XML");
+              Log.Log(ex.ToString());
+            }
+          }
+        }
+      }
+      Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ = " + objects.Count);
+      return objects;
+    }
+  }
 }

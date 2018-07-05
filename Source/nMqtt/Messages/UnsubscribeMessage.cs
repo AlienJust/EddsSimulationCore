@@ -1,46 +1,38 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace nMqtt.Messages
-{
-    /// <summary>
-    /// 取消订阅
-    /// </summary>
-    [MessageType(MessageType.Unsuback)]
-    internal sealed class UnsubscribeMessage : MqttMessage
-    {
-        List<string> topics = new List<string>();
+namespace nMqtt.Messages {
+  /// <summary>
+  /// 取消订阅
+  /// </summary>
+  [MessageType(MessageType.Unsuback)]
+  internal sealed class UnsubscribeMessage : MqttMessage {
+    List<string> topics = new List<string>();
 
-        public short MessageIdentifier { get; set; }
+    public short MessageIdentifier { get; set; }
 
-        public override void Encode(Stream stream)
-        {
-            using (var body = new MemoryStream())
-            {
-                body.WriteShort(MessageIdentifier);
+    public override void Encode(Stream stream) {
+      using (var body = new MemoryStream()) {
+        body.WriteShort(MessageIdentifier);
 
-                foreach (var item in topics)
-                {
-                    body.WriteString(item);
-                }
-
-                FixedHeader.RemaingLength = (int)body.Length;
-                FixedHeader.WriteTo(stream);
-                body.WriteTo(stream);
-            }
+        foreach (var item in topics) {
+          body.WriteString(item);
         }
 
-        public void Unsubscribe(string topic)
-        {
-            topics.Add(topic);
-        }
+        FixedHeader.RemaingLength = (int) body.Length;
+        FixedHeader.WriteTo(stream);
+        body.WriteTo(stream);
+      }
     }
 
-    /// <summary>
-    /// 取消订阅回执
-    /// </summary>
-    [MessageType(MessageType.Unsuback)]
-    internal sealed class UnsubscribeAckMessage : MqttMessage
-    {
+    public void Unsubscribe(string topic) {
+      topics.Add(topic);
     }
+  }
+
+  /// <summary>
+  /// 取消订阅回执
+  /// </summary>
+  [MessageType(MessageType.Unsuback)]
+  internal sealed class UnsubscribeAckMessage : MqttMessage { }
 }

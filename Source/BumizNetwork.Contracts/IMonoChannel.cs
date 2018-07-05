@@ -1,18 +1,19 @@
 using System;
 
 namespace BumizNetwork.Contracts {
-	public delegate void QueueCountChangedDelegate();
-	/// <summary>
-	/// Интерфейс моноканала
-	/// </summary>
-	public interface IMonoChannel : IDisposable {
-		void AddCommandToQueueAndExecuteAsync(object item);
-		void AddCommandToQueueAndExecuteAsync(object item, IoPriority priority);
+  public delegate void QueueCountChangedDelegate();
 
-		byte[] AddCommandToQueueAndWaitExecution(IAddressedSendingItem item);
+  /// <summary>
+  /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  /// </summary>
+  public interface IMonoChannel : IDisposable {
+    void AddCommandToQueueAndExecuteAsync(object item);
+    void AddCommandToQueueAndExecuteAsync(object item, IoPriority priority);
 
-		Action QueueChangedCallback { get; set; }
-		int QueueLength { get; }
-		void ClearQueue();
-	}
+    byte[] AddCommandToQueueAndWaitExecution(IAddressedSendingItem item);
+
+    Action QueueChangedCallback { get; set; }
+    int QueueLength { get; }
+    void ClearQueue();
+  }
 }

@@ -6,15 +6,13 @@ namespace nMqtt.Messages {
   /// QoS 2 publish received, part 3
   /// </summary>
   [MessageType(MessageType.Pubcomp)]
-  internal sealed class PublishCompMessage : MqttMessage
-  {
+  internal sealed class PublishCompMessage : MqttMessage {
     /// <summary>
     /// 消息ID
     /// </summary>
     public short MessageIdentifier { get; set; }
 
-    protected override void Decode(Stream stream)
-    {
+    protected override void Decode(Stream stream) {
       MessageIdentifier = stream.ReadShort();
     }
   }
