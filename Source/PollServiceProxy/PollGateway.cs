@@ -38,7 +38,7 @@ namespace PollServiceProxy {
 			_scadaObjects = XmlFactory.GetScadaObjectsFromXml(Path.Combine(Env.CfgPath, "ScadaObjects.xml"));
 			_microPacketSendingIntervalMs = XmlFactory.GetMicroPacketSendingIntervalMsFromXml(Path.Combine(Env.CfgPath, "PollServiceProxy.xml"));
 
-			_microPacketSendThread = new Thread(SendMicroPackets); // Инифиализация потока отправки микропакетов (но не запуск)
+			_microPacketSendThread = new Thread(SendMicroPackets);
 		}
 
 		public override void SetCompositionRoot(ICompositionRoot root) {
@@ -49,7 +49,7 @@ namespace PollServiceProxy {
 				//subSystem.SetGateway(this);
 			//}
 
-			//Log.Log("Загружены следующие подсистемы: (количество = " + _internalSystems.Count + ")");
+			//Log.Log("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ = " + _internalSystems.Count + ")");
 			//foreach (var internalSystem in _internalSystems) {
 				//Log.Log(internalSystem.SystemName);
 			//}
@@ -58,43 +58,35 @@ namespace PollServiceProxy {
 			if (_microPacketSendThread.ThreadState == ThreadState.Unstarted) {
 				foreach (var scadaObjectInfo in _scadaObjects) {
 					foreach (var scadaAddress in scadaObjectInfo.Value.ScadaAddresses) {
-						// На каждый объект скады с сетевым адерсом создается свой поток
-
 						// TODO: strategy selection:
 						// TODO: Add to XML configuration
 						// TODO: strategy: if working then drop 
 						// TODO:    or   : if working then enqueue
-						_perScadaAddressWorkers.Add(scadaAddress, new WorkerSingleThreadedRelayDrop<Action>(a => a(), ThreadPriority.Normal, true, null));
-						//_perScadaAddressWorkers.Add(scadaAddress, new SingleThreadedRelayQueueWorker<Action>(a => a(), ThreadPriority.Normal, true, null));
+						_perScadaAddressWorkers.Add(scadaAddress, new WorkerSingleThreadedRelayDrop<Action>(a => a(), ThreadPriority.BelowNormal, true, null));
 					}
 				}
 
-				// к каждому PollService цепляется событие о получении данных от него:
 				foreach (var scadaClient in _scadaClients) {
 					scadaClient.Value.DataReceived += OnScadaLinkDataReceived;
 				}
 
 				_microPacketSendThread.Start();
-				Log.Log("СКАДА серверы и объекты инициализированы, поток отправки микропакетов запущен");
+				Log.Log("PollGateway.SetCompositionRoot is complete OK");
 			}
 			else {
-				Log.Log("Странно, поток микропакетов уже запущен!");
+				Log.Log("PollGateway.SetCompositionRoot something strange, micropackets send thread was allready started! ER");
 			}
 		}
 
 
 		private void OnScadaLinkDataReceived(object sender, DataReceivedEventArgs eventArgs) {
-			// Данные от скады получены - вызывается в хрен знает каком потоке.
 			try {
 				var scadaClient = sender as INamedScadaLink;
 				if (scadaClient == null) {
-					Log.Log("Не удалось преобразовать объект, создавший событие к интерфейсу INamedScadaLink, отмена обработки входных данных");
+					Log.Log("OnScadaLinkDataReceived INamedScadaLink, something wrong, scadaClient is null! ER");
 					return;
 				}
 
-
-
-				// для всех объектов, которые относятся к PollService приславшему данные и имеет нужный сетевой адрес
 				var scadaObjectNetAddress = eventArgs.NetAddress;
 				foreach (var scadaObjectInfo in _scadaObjects) {
 					foreach (var objectScadaAddress in scadaObjectInfo.Value.ScadaAddresses) {
@@ -102,13 +94,13 @@ namespace PollServiceProxy {
 							var scadaObjectName = scadaObjectInfo.Key;
 							//var scadaObjectNetAddress = objectScadaAddress.NetAddress;
 
-							Log.Log("Получен запрос для контроллера, имеющего адрес скады " + objectScadaAddress + ". Адрес найден в конфигурации, все подсистемы шлюза будут оповещены в обработчике запросов, привязанному к этому адресу скады");
+							Log.Log("Object with address " + objectScadaAddress + " was found, need to notify subsystem");
 							_perScadaAddressWorkers[objectScadaAddress].AddWork(
 								() => {
 									var counter = new WaitableCounter(0);
 									foreach (var internalSystem in _internalSystems) {
 										try {
-											Log.Log("Оповещение подсистемы " + internalSystem.SystemName);
+											Log.Log("Notifying internal system " + internalSystem.SystemName);
 											counter.IncrementCount();
 
 											internalSystem.ReceiveData(
@@ -120,13 +112,13 @@ namespace PollServiceProxy {
 												(code, reply) => SendReplyData(scadaClient.Name, scadaObjectNetAddress, (byte)code, reply.ToArray()));
 										}
 										catch (Exception ex) {
-											Log.Log("Произошла ошибка при работе с одной из подсистем: " + ex);
+											Log.Log("Something wrong during internal systems notification: " + ex);
 											//counter.DecrementCount(); // TODO: do I really need this?
 										}
 									}
-									Log.Log("Ожидание завершения работы всех подсистем");
+									Log.Log("All internal systems were notified");
 									counter.WaitForCounterChangeWhileNotPredecate(c => c == 0);
-									Log.Log("Операция по всем оповещенным подсистемам для данного адреса скады завершена");
+									Log.Log("All internal systems reported back about notify");
 								});
 							break;
 						}
@@ -134,7 +126,7 @@ namespace PollServiceProxy {
 				}
 			}
 			catch (Exception ex) {
-				Log.Log("Произошла ошибка при получении данных от одной из скад: " + ex);
+				Log.Log("PollGateway.OnScadaLinkDataReceived exception: " + ex);
 			}
 		}
 
@@ -149,13 +141,13 @@ namespace PollServiceProxy {
 								sendsCount++;
 							}
 							catch (Exception ex) {
-								Log.Log("Не удалось отправить микропакет, причина:");
+								Log.Log("Exception on sending micropacket: " + ex);
 								Log.Log(ex.ToString());
 							}
 						}
 					}
 				}
-				Log.Log("Было отправлено микропакетов: " + sendsCount);
+				Log.Log("Micropackets was sended, count: " + sendsCount);
 				Thread.Sleep(_microPacketSendingIntervalMs);
 			}
 		}
@@ -177,7 +169,7 @@ namespace PollServiceProxy {
 		public void RegisterSubSystem(ISubSystem subSystem)
 		{
 			_internalSystems.Add(subSystem);
-			Log.Log("Зарегистрирована подсистема обработки входящих данных " + subSystem.SystemName);
+			Log.Log("Internal system (subsystem) was registred, name: " + subSystem.SystemName);
 		}
 
 		public override void BecameUnused()

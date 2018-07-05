@@ -4,7 +4,10 @@ using System.Net.Sockets;
 using System.Threading;
 using AJ.Std.Concurrent;
 using AJ.Std.Concurrent.Contracts;
+using AJ.Std.Loggers;
+using AJ.Std.Loggers.Contracts;
 using AJ.Std.Text;
+using AJ.Std.Text.Contracts;
 using Audience;
 using ScadaClient.Contracts;
 
@@ -16,6 +19,11 @@ namespace ScadaClient.Udp
 		private readonly IWorker<Action> _receiveWorker;
 		private readonly IWorker<Action> _proceedReceivedDataWorker;
 		private readonly IWorker<Action> _sendDataWorker;
+		
+		static readonly ILogger Log = new RelayMultiLogger(true,
+			new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })),
+			new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Magenta, Console.BackgroundColor), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
+		
 		public QueuedScadaClient(IPAddress serverIpAddress, int serverPort, int localPort) {
 			_serverEndPoint = new IPEndPoint(serverIpAddress, serverPort);
 			_client = new UdpClient(new IPEndPoint(IPAddress.Any, localPort));
@@ -35,10 +43,10 @@ namespace ScadaClient.Udp
 					var receivedData = _client.Receive(ref remotePoint); // receive thread waits here
 					_proceedReceivedDataWorker.AddWork(() => {
 						// PROCEED DATA THREAD:
-						Console.WriteLine("Something received from: " + remotePoint + " data: " + receivedData.ToText());
+						Log.Log("Something received from: " + remotePoint + " data: " + receivedData.ToText());
 						if (Equals(remotePoint, _serverEndPoint))
 						{
-							Console.WriteLine("Remote point is correct");
+							Log.Log("Remote point is correct");
 							if (receivedData.Length >= 8)
 							{
 								var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8));
@@ -48,7 +56,7 @@ namespace ScadaClient.Udp
 								{
 									rcvData[i] = receivedData[i + 5];
 								}
-								Console.WriteLine("Invoked data received event");
+								Log.Log("Invoked data received event");
 								DataReceived?.Invoke(this, new DataReceivedEventArgs(netAddr, cmdCode, rcvData));
 							}
 						}

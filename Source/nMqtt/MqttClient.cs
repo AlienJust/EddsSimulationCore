@@ -4,29 +4,31 @@ using System.Threading;
 using System.Diagnostics;
 using nMqtt.Messages;
 using System.Threading.Tasks;
+using AJ.Std.Text;
 
 namespace nMqtt {
   /// <summary>
-  /// Mqtt客户端
+  /// Client for MQTT 3.1.1
   /// </summary>
   public sealed class MqttClient : IDisposable {
     private Timer _pingTimer;
     private MqttConnection _conn;
     private readonly AutoResetEvent _connResetEvent;
-    public Action<string, byte[]> MessageReceived;
+    public event MessageReceivedDelegate MessageReceived;
+    //public Action<string, byte[]> MessageReceived;
 
     /// <summary>
-    /// 客户端标识
+    /// ID
     /// </summary>
     public string ClientId { get; }
 
     /// <summary>
-    /// 服务器地址
+    /// Server address (IP or hostname)
     /// </summary>
     public string Server { get; } = "localhost";
 
     /// <summary>
-    /// 服务器端口
+    /// TCP port, that server is listen on
     /// </summary>
     public int Port { get; set; } = 1883;
 
@@ -49,7 +51,7 @@ namespace nMqtt {
     }
 
     /// <summary>
-    /// 连接
+    /// Async connection to server
     /// </summary>
     /// <param name="username">mqtt username</param>
     /// <param name="password">mqtt password</param>
@@ -84,7 +86,7 @@ namespace nMqtt {
       }
 
       if (ConnectionState == ConnectionState.Connected) {
-        _pingTimer = new Timer((state) => { _conn.SendMessage(new PingReqMessage()); }, null, KeepAlive * 1000,
+        _pingTimer = new Timer(state => { _conn.SendMessage(new PingReqMessage()); }, null, KeepAlive * 1000,
           KeepAlive * 1000);
       }
 
@@ -97,11 +99,11 @@ namespace nMqtt {
     }
 
     /// <summary>
-    /// 发布消息
+    /// Allows publish data to some topic
     /// </summary>
-    /// <param name="topic">主题</param>
-    /// <param name="data">数据</param>
-    /// <param name="qos">服务质量等级</param>
+    /// <param name="topic">Topic</param>
+    /// <param name="data">Data bytes</param>
+    /// <param name="qos">Quality of service</param>
     public void Publish(string topic, byte[] data, Qos qos = Qos.AtMostOnce) {
       var msg = new PublishMessage {
         FixedHeader = {Qos = qos},
@@ -119,10 +121,7 @@ namespace nMqtt {
     /// <param name="topic"></param>
     /// <param name="qos"></param>
     public void Subscribe(string topic, Qos qos) {
-      
       var msg = new SubscribeMessage();
-      //msg.FixedHeader.Qos = Qos.AtMostOnce; // if one topic
-      //msg.MessageIdentifier = 0;
       
       msg.Subscribe(topic, qos);
       Console.WriteLine("Subscribe message generated (" + topic + "), sending...");
@@ -130,12 +129,11 @@ namespace nMqtt {
     }
 
     /// <summary>
-    /// 取消订阅
+    /// 
     /// </summary>
     /// <param name="topic"></param>
     public void Unsubscribe(string topic) {
-      var msg = new UnsubscribeMessage();
-      msg.FixedHeader.Qos = Qos.AtLeastOnce;
+      var msg = new UnsubscribeMessage {FixedHeader = {Qos = Qos.AtLeastOnce}};
       msg.Unsubscribe(topic);
       _conn.SendMessage(msg);
     }
@@ -209,12 +207,13 @@ namespace nMqtt {
     }
 
     void OnMessageReceived(string topic, byte[] data) {
-      MessageReceived?.Invoke(topic, data);
+      MessageReceived?.Invoke(this, new MessageReceivedEventArgs(topic, data));
     }
 
     void Close() {
       if (ConnectionState == ConnectionState.Connecting) {
         // TODO: Decide what to do if the caller tries to close a connection that is in the process of being connected.
+        // TODO: may be throw exception, or cancel connection
       }
 
       if (ConnectionState == ConnectionState.Connected) {
@@ -232,6 +231,21 @@ namespace nMqtt {
 
       _pingTimer?.Dispose();
       GC.SuppressFinalize(this);
+    }
+  }
+
+  public delegate void MessageReceivedDelegate(object sender, MessageReceivedEventArgs args);
+
+  public class MessageReceivedEventArgs : EventArgs {
+    public MessageReceivedEventArgs(string topic, byte[] data) :base() {
+      Topic = topic;
+      Data = data;
+    }
+    public string Topic { get; }
+    public byte[] Data { get; }
+
+    public override string ToString() {
+      return "Topic: " + Topic + ", received: " + Data.ToText();
     }
   }
 }
