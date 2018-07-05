@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Gateways>
-	<!--<Gateway Name="Gateway1" />-->
-	<!--<Gateway Name="Gateway2" />-->
-	<Gateway Name="gate2" />
-  <Gateway Name="gate2001" />
+    <!--<Gateway Name="Gateway1" />-->
+    <!--<Gateway Name="Gateway2" />-->
+    <Gateway Name="gate2"/>
+    <Gateway Name="gate2001"/>
 </Gateways>

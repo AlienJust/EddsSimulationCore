@@ -24,7 +24,7 @@ namespace GatewayApp {
           {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
     [ImportMany]
-    public IEnumerable<ICompositionPart> _compositionParts { get; set; }
+    private IEnumerable<ICompositionPart> _compositionParts { get; set; }
 
     public CompositionRoot() {
       Log.Log("CompositionRoot constructor called");
