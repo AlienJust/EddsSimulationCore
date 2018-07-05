@@ -14,7 +14,9 @@ namespace Controllers.Lora {
     private readonly Action<string> _logAction;
     private readonly MqttClient _client;
 
-    private DateTime? _lastCurrentDataRequestTime;
+    private DateTime _lastCurrentDataRequestTime;
+    private readonly TimeSpan _cacheInvalidationTime;
+    
     private IReadOnlyList<byte> _lastCurrentDataResult;
 
     public string Name { get; }
@@ -26,8 +28,10 @@ namespace Controllers.Lora {
       _logAction = logAction;
       Name = name;
 
-      _lastCurrentDataResult = new byte[] {0,0,0,0};
-      
+      _lastCurrentDataRequestTime = DateTime.MinValue;
+      _lastCurrentDataResult = new byte[0];
+      _cacheInvalidationTime = TimeSpan.FromMinutes(5);
+
       var rxTopic = mqttTopicPrefix + _deviceId + "/rx";
       Console.WriteLine(rxTopic);
       _client = new MqttClient("127.0.0.1", Guid.NewGuid().ToString()); // std port is 1883
@@ -56,22 +60,25 @@ namespace Controllers.Lora {
 
     private void OnMessageReceived(object sender, MessageReceivedEventArgs args) {
       NamedLog("Received rx " + args.Topic + " >>> " + args.Data.ToText());
-      _lastCurrentDataRequestTime = DateTime.Now; // remember time
-      
-      // TODO: TO KNOW, WHAT THREAD THIS METHOD CALLED
-      var rawJson = Encoding.UTF8.GetString(args.Data);
-      NamedLog("Parsed RX >>> " + rawJson);
-      var lastData = rawJson.Split(":").Last();
-      lastData = lastData.Substring(1, lastData.Length - 3);
-      NamedLog("Parsed RX LAST : >>> " + lastData);
-      var decodedBytes = Convert.FromBase64String(lastData);
-      NamedLog("Decoded bytes are: " + decodedBytes.ToText());
-      
-      _lastCurrentDataResult = decodedBytes; // copy data
-      
-      //NamedLog("Float RX DATA >>>" + BitConverter.ToSingle(decodedBytes));
-      
-      
+      try {
+        // TODO: TO KNOW, WHAT THREAD THIS METHOD CALLED
+        var rawJson = Encoding.UTF8.GetString(args.Data);
+        NamedLog("Parsed RX >>> " + rawJson);
+        var lastData = rawJson.Split(",\"data\":").Last();
+        lastData = lastData.Substring(1, lastData.Length - 3);
+        NamedLog("Parsed RX LAST : >>> " + lastData);
+        var decodedBytes = Convert.FromBase64String(lastData);
+        NamedLog("Decoded bytes are: " + decodedBytes.ToText());
+
+        _lastCurrentDataResult = decodedBytes; // copy data
+        _lastCurrentDataRequestTime = DateTime.Now; // remember time
+        //NamedLog("Float RX DATA >>>" + BitConverter.ToSingle(decodedBytes));
+      }
+      catch (Exception e) {
+        Console.WriteLine(e);
+        throw;
+      }
+
       //NamedLog("JSON data vaule: " + data.data);
       //{"applicationID":"1","applicationName":"mgf_vega_nucleo_debug_app","deviceName":"mgf","devEUI":"be7a0000000000c8","deviceStatusBattery":254,"deviceStatusMargin":26,"rxInfo":[{"mac":"0000e8eb11417531","time":"2018-07-05T10:20:46.12777Z","rssi":-46,"loRaSNR":7.2,"name":"vega-gate","latitude":55.95764,"longitude":60.57098,"altitude":317}],"txInfo":{"frequency":868500000,"dataRate":{"modulation":"LORA","bandwidth":125,"spreadFactor":7},"adr":true,"codeRate":"4/5"},"fCnt":2502,"fPort":2,"data":"/////w=="}
     }
@@ -83,12 +90,16 @@ namespace Controllers.Lora {
         if (result[3] == 0) {
           NamedLog("Поступил запрос текущих данных через шестерку");
 
-          NamedLog("Данные взяты из кэша"); // TODO: cache lifetime
-          result.AddRange(_lastCurrentDataResult);
+          
+          if (DateTime.Now - _lastCurrentDataRequestTime < _cacheInvalidationTime) {
+            NamedLog("Данные взяты из кэша"); // TODO: cache lifetime
+            result.AddRange(_lastCurrentDataResult);
+          }
+          else NamedLog("Cache data are too old, will NOT send it!");
+
           callback(null, result);
-          
-          
-          
+
+
           //NamedLog("Отправка запроса в менеджер обмена по сети БУМИЗ");
         }
         //else if ((result[3] & 0x06) == 0x06) {
