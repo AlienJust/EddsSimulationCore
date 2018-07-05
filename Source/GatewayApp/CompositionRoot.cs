@@ -50,7 +50,7 @@ namespace GatewayApp {
       try {
         foreach (var compositionPart in _compositionParts) {
           try {
-            Log.Log("Инициализация композиционной части " + compositionPart.Name);
+            Log.Log("Инициализация композиционной части " + compositionPart.Name + " (" + compositionPart.GetType().FullName+ ")");
             compositionPart.SetCompositionRoot(this);
           }
           catch (Exception ex) {

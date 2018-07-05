@@ -87,11 +87,7 @@ namespace Controllers.Gateway {
     public override void SetCompositionRoot(ICompositionRoot root) {
       _compositionRoot = root;
 
-      _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-      _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-      if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
-      _scadaPollGatewayPart.AddRef();
-      _scadaPollGateway.RegisterSubSystem(this);
+      
 
       foreach (var gatewayControllerInfo in _gatewayControllerInfos) {
         _controllers.Add(new GateController(gatewayControllerInfo.Name));
@@ -101,6 +97,12 @@ namespace Controllers.Gateway {
       foreach (var controller in _controllers) {
         Log.Log(controller.Name);
       }
+      
+      _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
+      _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
+      if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+      _scadaPollGatewayPart.AddRef();
+      _scadaPollGateway.RegisterSubSystem(this);
     }
 
     public IEnumerable<IGatewayControllerInfo> GatewayControllerInfos => _gatewayControllerInfos;

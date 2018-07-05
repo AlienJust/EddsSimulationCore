@@ -49,7 +49,7 @@ namespace Controllers.Lora {
     public LoraControllersSubSystem() {
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos =
-        new List<LoraControllerInfoSimple> {new LoraControllerInfoSimple("lora1", "be7a0000000000c8")};
+        new List<LoraControllerInfoSimple> {new LoraControllerInfoSimple("lora99", "be7a0000000000c8")};
       _loraControllers = new List<IController>();
     }
 
@@ -57,11 +57,14 @@ namespace Controllers.Lora {
     public override void SetCompositionRoot(ICompositionRoot root) {
       _compositionRoot = root;
 
-      _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-      _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-      if (_scadaPollGateway == null)
-        throw new Exception("Не удалось найти PollGateWay через composition root");
-      _scadaPollGatewayPart.AddRef();
+
+      foreach (var loraControllerInfo in _loraControllerInfos) {
+        _loraControllers.Add(new LoraController(loraControllerInfo.Name, loraControllerInfo.DeviceId, _mqttTopicStart,
+          Log.Log));
+      }
+
+      Log.Log("Подсистема подключаемых контроллеров LORA инициализирована, число контроллеров: " +
+              _loraControllers.Count);
 
 
       _attachedControllersInfoSystemPart = _compositionRoot.GetPartByName("GatewayAttachedControllers");
@@ -76,13 +79,12 @@ namespace Controllers.Lora {
         throw new Exception("Не удалось найти GatewayControllers через composition root");
       _gatewayControllesManagerPart.AddRef();
 
-      foreach (var loraControllerInfo in _loraControllerInfos) {
-        _loraControllers.Add(new LoraController(loraControllerInfo.Name, loraControllerInfo.DeviceId, _mqttTopicStart,
-          Log.Log));
-      }
 
-      Log.Log("Подсистема подключаемых контроллеров БУМИЗ инициализирована, число контроллеров: " +
-              _loraControllers.Count);
+      _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
+      _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
+      if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+      _scadaPollGatewayPart.AddRef();
+      _scadaPollGateway.RegisterSubSystem(this);
     }
 
 
@@ -100,9 +102,9 @@ namespace Controllers.Lora {
           Log.Log("Код команды и длина данных позволяют работать дальше, канал=" + channel + ", тип=" +
                   type + ", номер=" + number);
 
-          if (type != 13) {
+          if (type != 50) {
             Log.Log(
-              "Тип счетчика не равен 13, обработка такой команды подсистемой LORA контроллеров не осуществляется");
+              "Тип счетчика не равен 50, обработка такой команды подсистемой LORA контроллеров не осуществляется");
             return;
           }
 
@@ -113,7 +115,9 @@ namespace Controllers.Lora {
               Log.Log("Объект-шлюз найден, поиск подключенного объекта...");
               foreach (var attachedControllerInfo in _attachedControllersInfoSystem
                 .AttachedControllerInfos) {
-                Log.Log("Проверка подключаемого объекта " + attachedControllerInfo.Name);
+                Log.Log("Проверка подключаемого объекта " + attachedControllerInfo.Name + " ch=" +
+                        attachedControllerInfo.Channel + ", number=" + attachedControllerInfo.Number + ", type=" +
+                        attachedControllerInfo.Type);
                 if (attachedControllerInfo.Channel == channel &&
                     attachedControllerInfo.Type == type && attachedControllerInfo.Number == number) {
                   Log.Log("Подключаемый объект найден, поиск соответствующего объекта LORA...");
@@ -175,7 +179,7 @@ namespace Controllers.Lora {
       }
     }
 
-    public override string Name => "BumizControllers";
+    public override string Name => "LoraControllers";
 
     public override void BecameUnused() {
       _scadaPollGatewayPart.Release();

@@ -19,7 +19,7 @@ namespace Controllers.Gateway {
 
     public static IEnumerable<IGatewayControllerInfo> GetGatewaysConfigFromXml(string filename) {
       var gatewayControllerInfos = new List<IGatewayControllerInfo>();
-      Log.Log("���������� ���������� � ������ �� XML ����� ������������...");
+      Log.Log("Loading gateway controllers information from XML file " + filename);
 
       var docChannels = XDocument.Load(filename);
       {
@@ -30,16 +30,15 @@ namespace Controllers.Gateway {
             try {
               var gatewayName = gatewayElement.Attribute("Name").Value;
               gatewayControllerInfos.Add(new GatewayControllerInfo(gatewayName));
-              Log.Log("���������� � ����� " + gatewayName + " ����������������");
+              Log.Log("Added gateway controller info from XML, controller name is " + gatewayName);
             }
             catch (Exception ex) {
-              Log.Log("�� ������� ���������������� ���������� � �����");
-              Log.Log(ex.ToString());
+              Log.Log("Exception accured while loading gateway controller information from XML: " + ex);
             }
           }
         }
       }
-      Log.Log("���������� � ������ ���� ��������� �� XML �����, ����� ������: " + gatewayControllerInfos.Count);
+      Log.Log("Loading gateway controllers information from XML is complete, controllers count is " + gatewayControllerInfos.Count);
       return gatewayControllerInfos;
     }
   }

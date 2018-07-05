@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Servers>
     <UdpServer Label="AjHomeScada" Ip="212.220.210.140" Port="36963" LocalPort="36964" ConnectionDropPeriodMs="60000"/>
-    <UdpServer Label="LocalScada" Ip="127.0.0.1" Port="36963" LocalPort="36965" ConnectionDropPeriodMs="60000"/>
+    <UdpServer Label="LocalScada" Ip="192.168.11.125" Port="36963" LocalPort="36965" ConnectionDropPeriodMs="60000"/>
+    <!--<UdpServer Label="LocalScada" Ip="127.0.0.1" Port="36963" LocalPort="36965" ConnectionDropPeriodMs="60000"/>-->
     <!--<UdpServer Label="Danila" Ip="10.0.0.67" Port="36963" ConnectionDropPeriodMs="60000"/>-->
     <!--<UdpServer Label="Horizont" Ip="10.10.10.10" Port="36963" ConnectionDropPeriodMs="60000"/>-->
 </Servers>

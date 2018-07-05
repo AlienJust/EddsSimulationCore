@@ -22,7 +22,7 @@ namespace Controllers.Gateway {
             break;
           case 6:
             var result6 = data.ToList();
-            // ����������� ��� �������� 250 ����������, ��� ������ ���� ��������������� � �����. (c) ������
+            // Special type of attached counter = 250 means that command sended to gateway controller itself (c) Danila
             if (result6[1] == 250) {
               result6.Add((byte) _random.Next(256));
               result6.AddRange(BitConverter.GetBytes(Environment.TickCount / 60000));
@@ -30,9 +30,9 @@ namespace Controllers.Gateway {
               break;
             }
 
-            throw new Exception("������� �� �������������� ������������-������, �.�. ��� ������������� ������� �� 250");
+            throw new Exception("Attached command is skipped by gateway controller because it attached counter type is not equals 250");
           default:
-            throw new Exception("������� � " + command + "�� �������������� ������������-������");
+            throw new Exception("Intelecon command with code " + command + " is not supported by gateway controller");
         }
       }
       catch (Exception ex) {
