@@ -9,7 +9,7 @@ using nMqtt.Messages;
 
 namespace Controllers.Lora {
   internal sealed class LoraController : IController {
-    private readonly string _deviceId;
+    private readonly string _devEui;
     private readonly string _mqttTopicPrefix;
     private readonly Action<string> _logAction;
     private readonly MqttClient _client;
@@ -22,46 +22,36 @@ namespace Controllers.Lora {
     public string Name { get; }
 
 
-    public LoraController(string name, string deviceId, string mqttTopicPrefix, Action<string> logAction) {
-      _deviceId = deviceId;
+    public LoraController(string name, string devEui, string mqttTopicPrefix, Action<string> logAction, MqttClient client) {
+      Name = name;
+      _devEui = devEui; // string like "be7a0000000000c8", it is unique for each LORA controller
       _mqttTopicPrefix = mqttTopicPrefix;
       _logAction = logAction;
-      Name = name;
 
       _lastCurrentDataRequestTime = DateTime.MinValue;
       _lastCurrentDataResult = new byte[0];
       _cacheInvalidationTime = TimeSpan.FromMinutes(5);
 
-      var rxTopic = mqttTopicPrefix + _deviceId + "/rx";
-      Console.WriteLine(rxTopic);
-      _client = new MqttClient("127.0.0.1", Guid.NewGuid().ToString()); // std port is 1883
-      var state = _client.ConnectAsync().Result;
-      if (state == ConnectionState.Connected) {
-        _logAction("Connected to MQTT broker");
-        _client.MessageReceived += OnMessageReceived;
-        _client.Subscribe(rxTopic, Qos.ExactlyOnce);
+      var rxTopic = mqttTopicPrefix + _devEui + "/rx";
+      
+      _client = client;
+      _client.MessageReceived += OnMessageReceived;
+      _client.Subscribe(rxTopic, Qos.ExactlyOnce);
+      NamedLog("Subscribed to RX topic " + rxTopic);
 
-        //for (int i = 0; i < 100; i++)
-        //{
-        //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("123 salem#" + i), Qos.AtLeastOnce);
-        //Thread.Sleep(100);
-        //}
-        //_client.Publish("rxTopic2", Encoding.UTF8.GetBytes("123 salem#"), Qos.AtLeastOnce);
+      // TODO: PUBLISH string like: 
+      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("123_salem"), Qos.AtLeastOnce);
+      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("124_salem"), Qos.AtLeastOnce);
+      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("125_salem"), Qos.AtLeastOnce);
 
-        //var enc = new MqttEncoding();
-        //_client.Publish(rxTopic2, enc.GetBytes("123_salem"), Qos.AtLeastOnce);
-        //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("123_salem"), Qos.AtLeastOnce);
-        //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("124_salem"), Qos.AtLeastOnce);
-        //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("125_salem"), Qos.AtLeastOnce);
-
-        //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("125_salem"), Qos.AtLeastOnce);
-      }
+      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("125_salem"), Qos.AtLeastOnce);
     }
 
     private void OnMessageReceived(object sender, MessageReceivedEventArgs args) {
       NamedLog("Received rx " + args.Topic + " >>> " + args.Data.ToText());
       try {
         // TODO: TO KNOW, WHAT THREAD THIS METHOD CALLED
+        // Need to decode string like: //{"applicationID":"1","applicationName":"mgf_vega_nucleo_debug_app","deviceName":"mgf","devEUI":"be7a0000000000c8","deviceStatusBattery":254,"deviceStatusMargin":26,"rxInfo":[{"mac":"0000e8eb11417531","time":"2018-07-05T10:20:46.12777Z","rssi":-46,"loRaSNR":7.2,"name":"vega-gate","latitude":55.95764,"longitude":60.57098,"altitude":317}],"txInfo":{"frequency":868500000,"dataRate":{"modulation":"LORA","bandwidth":125,"spreadFactor":7},"adr":true,"codeRate":"4/5"},"fCnt":2502,"fPort":2,"data":"/////w=="}
         var rawJson = Encoding.UTF8.GetString(args.Data);
         NamedLog("Parsed RX >>> " + rawJson);
         var lastData = rawJson.Split(",\"data\":").Last();
@@ -78,9 +68,6 @@ namespace Controllers.Lora {
         Console.WriteLine(e);
         throw;
       }
-
-      //NamedLog("JSON data vaule: " + data.data);
-      //{"applicationID":"1","applicationName":"mgf_vega_nucleo_debug_app","deviceName":"mgf","devEUI":"be7a0000000000c8","deviceStatusBattery":254,"deviceStatusMargin":26,"rxInfo":[{"mac":"0000e8eb11417531","time":"2018-07-05T10:20:46.12777Z","rssi":-46,"loRaSNR":7.2,"name":"vega-gate","latitude":55.95764,"longitude":60.57098,"altitude":317}],"txInfo":{"frequency":868500000,"dataRate":{"modulation":"LORA","bandwidth":125,"spreadFactor":7},"adr":true,"codeRate":"4/5"},"fCnt":2502,"fPort":2,"data":"/////w=="}
     }
 
     public void GetDataInCallback(int command, IEnumerable<byte> data,
@@ -88,11 +75,11 @@ namespace Controllers.Lora {
       if (command == 6) {
         var result = data.ToList();
         if (result[3] == 0) {
-          NamedLog("Поступил запрос текущих данных через шестерку");
+          NamedLog("SCADA requested accepted, command code is 6, data type - current");
 
           
           if (DateTime.Now - _lastCurrentDataRequestTime < _cacheInvalidationTime) {
-            NamedLog("Данные взяты из кэша"); // TODO: cache lifetime
+            NamedLog("Data was taken from cache, send it back to SCADA");
             result.AddRange(_lastCurrentDataResult);
           }
           else NamedLog("Cache data are too old, will NOT send it!");
@@ -102,7 +89,10 @@ namespace Controllers.Lora {
 
           //NamedLog("Отправка запроса в менеджер обмена по сети БУМИЗ");
         }
-        //else if ((result[3] & 0x06) == 0x06) {
+        else if (result[3] == 0x06 || result[3] == 0x07) {
+          NamedLog("SCADA requested accepted, command code is 6, data type - half an hour, but nothing to send");
+          callback(null, result);
+        }
         //NamedLog("Запрос получасовых данных для " + _bumizControllerInfo.Name);
         //var minutes = result[3] == 0x06 ? 0 : 30;
         //var hour = result[4];
@@ -116,11 +106,11 @@ namespace Controllers.Lora {
         //}
 
         else {
-          NamedLog("Такая шестерка не поддерживается, будет отправлена пустая посылка");
+          NamedLog("SCADA requested accepted, command code is 6, data type = " + result[3]);
           callback(null, result);
         }
       }
-      else throw new Exception("Такая команда не поддерживается объектом БУМИЗ");
+      else throw new Exception("Such command is not supported by LORA controller");
     }
 
     private void NamedLog(object obj) {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Composition;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using AJ.Std.Composition;
 using AJ.Std.Composition.Contracts;
 using AJ.Std.Loggers;
@@ -12,6 +13,7 @@ using Audience;
 using Controllers.Contracts;
 using Controllers.Gateway;
 using Controllers.Gateway.Attached;
+using nMqtt;
 using PollServiceProxy.Contracts;
 
 namespace Controllers.Lora {
@@ -45,8 +47,21 @@ namespace Controllers.Lora {
     public string SystemName => "LoraControllers";
 
     private readonly string _mqttTopicStart;
+    private readonly MqttClient _mqttClient;
+    
+    private readonly string _mqttBrokerHost = "127.0.0.1"; // TODO: Move to config file
+    private readonly int _mqttBrokerPort = 1883; // std port is 1883 TCP  // TODO: Move to config file
 
     public LoraControllersSubSystem() {
+      _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
+      _mqttClient.Port = _mqttBrokerPort;
+      
+      var state = _mqttClient.ConnectAsync().Result;
+      if (state == ConnectionState.Connected) {
+        Log.Log("Connected to MQTT broker");
+      }
+      else throw new Exception("Cannot connect to MQTT broker");
+
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos =
         new List<LoraControllerInfoSimple> {new LoraControllerInfoSimple("lora99", "be7a0000000000c8")};
@@ -60,7 +75,7 @@ namespace Controllers.Lora {
 
       foreach (var loraControllerInfo in _loraControllerInfos) {
         _loraControllers.Add(new LoraController(loraControllerInfo.Name, loraControllerInfo.DeviceId, _mqttTopicStart,
-          Log.Log));
+          Log.Log, _mqttClient));
       }
 
       Log.Log("Подсистема подключаемых контроллеров LORA инициализирована, число контроллеров: " +
@@ -128,7 +143,7 @@ namespace Controllers.Lora {
                     if (loraObjName == loraController.Name) {
                       Log.Log("Объект LORA найден, запрос данных от объекта...");
                       isLoraControllerFound = true;
-                      //IGatewayControllerInfo info = gatewayControllerInfo; // для замыкания
+                      
                       loraController.GetDataInCallback(
                         commandCode,
                         data,
