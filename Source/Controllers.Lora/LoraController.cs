@@ -9,8 +9,7 @@ using nMqtt.Messages;
 
 namespace Controllers.Lora {
   internal sealed class LoraController : IController {
-    private readonly string _devEui;
-    private readonly string _mqttTopicPrefix;
+    private readonly string _mqttTxTopicName;
     private readonly Action<string> _logAction;
     private readonly MqttClient _client;
 
@@ -22,37 +21,27 @@ namespace Controllers.Lora {
     public string Name { get; }
 
 
-    public LoraController(string name, string devEui, string mqttTopicPrefix, Action<string> logAction, MqttClient client) {
+    public LoraController(string name, string mqttTxTopicName, Action<string> logAction, MqttClient client) {
       Name = name;
-      _devEui = devEui; // string like "be7a0000000000c8", it is unique for each LORA controller
-      _mqttTopicPrefix = mqttTopicPrefix;
+      _mqttTxTopicName = mqttTxTopicName;
       _logAction = logAction;
-
+      _client = client;
+      
       _lastCurrentDataRequestTime = DateTime.MinValue;
       _lastCurrentDataResult = new byte[0];
       _cacheInvalidationTime = TimeSpan.FromMinutes(5);
 
-      var rxTopic = mqttTopicPrefix + _devEui + "/rx";
-      
-      _client = client;
-      _client.MessageReceived += OnMessageReceived;
-      _client.Subscribe(rxTopic, Qos.ExactlyOnce);
-      NamedLog("Subscribed to RX topic " + rxTopic);
-
       // TODO: PUBLISH string like: 
-      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("123_salem"), Qos.AtLeastOnce);
-      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("124_salem"), Qos.AtLeastOnce);
-      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("125_salem"), Qos.AtLeastOnce);
-
-      //_client.Publish(rxTopic2, Encoding.UTF8.GetBytes("125_salem"), Qos.AtLeastOnce);
+      //_client.Publish(_mqttTxTopicName, new byte[]{1, 2, 3 }, Qos.AtLeastOnce);
+      //_client.Publish(_mqttTxTopicName, Encoding.UTF8.GetBytes("123_salem"), Qos.AtLeastOnce);
     }
 
-    private void OnMessageReceived(object sender, MessageReceivedEventArgs args) {
-      NamedLog("Received rx " + args.Topic + " >>> " + args.Data.ToText());
+    public void OnMessageReceived(PublishMessage msg) {
+      NamedLog("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
       try {
         // TODO: TO KNOW, WHAT THREAD THIS METHOD CALLED
         // Need to decode string like: //{"applicationID":"1","applicationName":"mgf_vega_nucleo_debug_app","deviceName":"mgf","devEUI":"be7a0000000000c8","deviceStatusBattery":254,"deviceStatusMargin":26,"rxInfo":[{"mac":"0000e8eb11417531","time":"2018-07-05T10:20:46.12777Z","rssi":-46,"loRaSNR":7.2,"name":"vega-gate","latitude":55.95764,"longitude":60.57098,"altitude":317}],"txInfo":{"frequency":868500000,"dataRate":{"modulation":"LORA","bandwidth":125,"spreadFactor":7},"adr":true,"codeRate":"4/5"},"fCnt":2502,"fPort":2,"data":"/////w=="}
-        var rawJson = Encoding.UTF8.GetString(args.Data);
+        var rawJson = Encoding.UTF8.GetString(msg.Payload);
         NamedLog("Parsed RX >>> " + rawJson);
         var lastData = rawJson.Split(",\"data\":").Last();
         lastData = lastData.Substring(1, lastData.Length - 3);
@@ -92,7 +81,7 @@ namespace Controllers.Lora {
           //NamedLog("Отправка запроса в менеджер обмена по сети БУМИЗ");
         }
         else if (result[3] == 0x06 || result[3] == 0x07) {
-          NamedLog("SCADA requested accepted, command code is 6, data type - half an hour, but nothing to send");
+          NamedLog("SCADA requested accepted, command code is 6, data type - half an hour, but no telemetry signals to send");
           callback(null, result);
         }
         //NamedLog("Запрос получасовых данных для " + _bumizControllerInfo.Name);
