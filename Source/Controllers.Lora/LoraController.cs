@@ -61,8 +61,10 @@ namespace Controllers.Lora {
         NamedLog("Decoded bytes are: " + decodedBytes.ToText());
 
         _lastCurrentDataResult = decodedBytes; // copy data
+        //_lastCurrentDataResult = BitConverter.GetBytes((float)1.23);
+        
         _lastCurrentDataRequestTime = DateTime.Now; // remember time
-        //NamedLog("Float RX DATA >>>" + BitConverter.ToSingle(decodedBytes));
+        NamedLog("Float RX DATA >>>" + BitConverter.ToSingle(decodedBytes));
       }
       catch (Exception e) {
         Console.WriteLine(e);

@@ -5,6 +5,7 @@
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="8" Name="bmz8"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="22" Name="bmz22"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="99" Name="lora99"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="100" Name="lora100"/>
 	<!--<AttachedControllerInfo Gateway="Gateway1" Channel="1" Type="13" Number="0" Name="v2"/>-->
 	<!--<AttachedControllerInfo Gateway="Gateway1" Channel="7" Type="13" Number="5" Name="PulseCounter1"/>-->
 	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="1" Type="13" Number="5" Name="PulseCounter2"/>-->

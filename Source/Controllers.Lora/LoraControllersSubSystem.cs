@@ -64,7 +64,7 @@ namespace Controllers.Lora {
 
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos =
-        new List<LoraControllerInfoSimple> {new LoraControllerInfoSimple("lora99", "be7a0000000000c8")};
+        new List<LoraControllerInfoSimple> {new LoraControllerInfoSimple("lora99", "be7a0000000000c8"), new LoraControllerInfoSimple("lora100", "be7a0000000000c9")};
       _loraControllers = new List<IController>();
     }
 
