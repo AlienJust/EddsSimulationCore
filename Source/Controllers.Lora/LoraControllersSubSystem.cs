@@ -89,7 +89,8 @@ namespace Controllers.Lora {
               var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
               var txTopicName = _mqttClient + loraControllerInfo.DeviceId + "/tx";
               _loraControllersByRxTopicName.Add(rxTopicName, new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient));
-              Log.Log("Subscribing for topic: " + rxTopicName + "...");
+              Log.Log("Subscribing for topic: " + rxTopicName);
+              Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
               _mqttClient.Subscribe(rxTopicName, Qos.AtLeastOnce);
               //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
               _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
