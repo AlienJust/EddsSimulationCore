@@ -3,5 +3,5 @@
   /// 断开连接
   /// </summary>
   [MessageType(MessageType.Disconnect)]
-  internal sealed class DisconnectMessage : MqttMessage { }
+  public sealed class DisconnectMessage : MqttMessage { }
 }

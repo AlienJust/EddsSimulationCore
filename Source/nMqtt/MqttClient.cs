@@ -15,8 +15,8 @@ namespace nMqtt {
     private MqttConnection _conn;
     private readonly AutoResetEvent _connResetEvent;
     public event MessageReceivedDelegate MessageReceived;
-    //public Action<string, byte[]> MessageReceived;
-
+    public event SomeMessageReceivedDelegate SomeMessageReceived;
+    
     /// <summary>
     /// ID
     /// </summary>
@@ -138,9 +138,12 @@ namespace nMqtt {
       _conn.SendMessage(msg);
     }
 
+    // TODO: would be nice when decoding messages and notifying user in own thread
     void DecodeMessage(byte[] buffer) {
       var msg = MqttMessage.DecodeMessage(buffer);
       Console.WriteLine("onRecv:{0}", msg.FixedHeader.MessageType);
+      SomeMessageReceived?.Invoke(msg);
+      
       switch (msg.FixedHeader.MessageType) {
         case MessageType.Connack:
           var connAckMsg = (ConnAckMessage) msg;
@@ -162,6 +165,8 @@ namespace nMqtt {
 
           _connResetEvent.Set();
           break;
+        
+        
         case MessageType.Publish:
           Console.WriteLine("DecodeMessage > MessageType.PUBLISH");
           var pubMsg = (PublishMessage) msg;
@@ -173,8 +178,8 @@ namespace nMqtt {
             };
             _conn.SendMessage(ackMsg);
           }
-
           OnMessageReceived(topic, data);
+          
           break;
         case MessageType.Puback:
           var pubAckMsg = (PublishAckMessage) msg;
@@ -192,6 +197,7 @@ namespace nMqtt {
         case MessageType.Suback:
           var subAckMsg = (SubscribeAckMessage) msg;
           Console.WriteLine("PUBACK MessageIdentifier:" + subAckMsg.MessageIdentifier);
+          
           break;
         case MessageType.Unsubscribe:
           break;
@@ -233,6 +239,8 @@ namespace nMqtt {
       GC.SuppressFinalize(this);
     }
   }
+
+  public delegate void SomeMessageReceivedDelegate(MqttMessage message);
 
   public delegate void MessageReceivedDelegate(object sender, MessageReceivedEventArgs args);
 

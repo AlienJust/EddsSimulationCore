@@ -6,7 +6,7 @@ namespace nMqtt.Messages
     /// 发布消息
     /// </summary>
     [MessageType(MessageType.Publish)]
-    internal sealed class PublishMessage : MqttMessage
+    public sealed class PublishMessage : MqttMessage
     {
         /// <summary>
         /// 主题
@@ -90,7 +90,7 @@ namespace nMqtt.Messages
     /// QoS 2 publish received, part 2
     /// </summary>
     [MessageType(MessageType.Pubrel)]
-    internal sealed class PublishRelMessage : MqttMessage
+    public sealed class PublishRelMessage : MqttMessage
     {
         /// <summary>
         /// 消息ID

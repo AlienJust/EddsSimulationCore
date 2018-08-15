@@ -6,7 +6,7 @@ namespace nMqtt.Messages {
   /// QoS 2 publish received, part 3
   /// </summary>
   [MessageType(MessageType.Pubcomp)]
-  internal sealed class PublishCompMessage : MqttMessage {
+  public sealed class PublishCompMessage : MqttMessage {
     /// <summary>
     /// 消息ID
     /// </summary>

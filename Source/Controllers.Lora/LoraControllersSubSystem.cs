@@ -13,7 +13,6 @@ using AJ.Std.Loggers.Contracts;
 using AJ.Std.Text;
 using AJ.Std.Text.Contracts;
 using Audience;
-using Controllers.Contracts;
 using Controllers.Gateway;
 using Controllers.Gateway.Attached;
 using nMqtt;
@@ -71,8 +70,11 @@ namespace Controllers.Lora {
       _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
       _mqttClient.Port = _mqttBrokerPort;
 
-      _mqttClient.OnMessageReceived += OnMessageReceived;
-      _mqttClient.ConnectAsync().Wait();
+      _mqttClient.SomeMessageReceived += OnMessageReceived;
+      var connectionState = _mqttClient.ConnectAsync().Result;
+      if (connectionState != ConnectionState.Connected) {
+        throw new Exception("Cannot connect to MQTT broker");
+      }
       
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos = new List<LoraControllerInfoSimple> {

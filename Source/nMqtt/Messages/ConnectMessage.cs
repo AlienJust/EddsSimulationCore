@@ -1,12 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace nMqtt.Messages {
   /// <summary>
   /// 发起连接
   /// </summary>
   [MessageType(MessageType.Connect)]
-  internal sealed class ConnectMessage : MqttMessage {
+  public sealed class ConnectMessage : MqttMessage {
     #region 可变报头 Variable header
 
     /// <summary>
@@ -124,62 +123,5 @@ namespace nMqtt.Messages {
         body.WriteTo(stream);
       }
     }
-  }
-
-  /// <summary>
-  /// 连接回执
-  /// </summary>
-  [MessageType(MessageType.Connack)]
-  internal sealed class ConnAckMessage : MqttMessage {
-    /// <summary>
-    /// 当前会话
-    /// </summary>
-    public bool SessionPresent { get; set; }
-
-    /// <summary>
-    /// 连接返回码
-    /// </summary>
-    public ConnectReturnCode ConnectReturnCode { get; set; }
-
-    protected override void Decode(Stream stream) {
-      SessionPresent = (stream.ReadByte() & 0x01) == 1;
-      ConnectReturnCode = (ConnectReturnCode) stream.ReadByte();
-    }
-  }
-
-  /// <summary>
-  /// 连接返回码
-  /// </summary>
-  [Flags]
-  internal enum ConnectReturnCode : byte {
-    /// <summary>
-    /// 连接已接受
-    /// </summary>
-    ConnectionAccepted = 0x00,
-
-    /// <summary>
-    /// 连接已拒绝，不支持的协议版本
-    /// </summary>
-    UnacceptedProtocolVersion = 0x01,
-
-    /// <summary>
-    /// 接已拒绝，不合格的客户端标识符
-    /// </summary>
-    IdentifierRejected = 0x02,
-
-    /// <summary>
-    /// 连接已拒绝，服务端不可用
-    /// </summary>
-    BrokerUnavailable = 0x03,
-
-    /// <summary>
-    /// 连接已拒绝，无效的用户名或密码
-    /// </summary>
-    BadUsernameOrPassword = 0x04,
-
-    /// <summary>
-    /// 连接已拒绝，未授权
-    /// </summary>
-    NotAuthorized = 0x05
   }
 }

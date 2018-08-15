@@ -6,8 +6,8 @@ namespace nMqtt.Messages {
   /// 取消订阅
   /// </summary>
   [MessageType(MessageType.Unsuback)]
-  internal sealed class UnsubscribeMessage : MqttMessage {
-    List<string> topics = new List<string>();
+  public sealed class UnsubscribeMessage : MqttMessage {
+    readonly List<string> topics = new List<string>();
 
     public short MessageIdentifier { get; set; }
 
@@ -34,5 +34,5 @@ namespace nMqtt.Messages {
   /// 取消订阅回执
   /// </summary>
   [MessageType(MessageType.Unsuback)]
-  internal sealed class UnsubscribeAckMessage : MqttMessage { }
+  public sealed class UnsubscribeAckMessage : MqttMessage { }
 }

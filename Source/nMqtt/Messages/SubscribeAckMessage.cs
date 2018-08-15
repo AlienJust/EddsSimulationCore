@@ -5,7 +5,7 @@ namespace nMqtt.Messages {
   /// 订阅回执
   /// </summary>
   [MessageType(MessageType.Suback)]
-  internal class SubscribeAckMessage : MqttMessage
+  public class SubscribeAckMessage : MqttMessage
   {
     public short MessageIdentifier { get; set; }
 

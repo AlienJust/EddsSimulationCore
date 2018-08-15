@@ -7,7 +7,7 @@ namespace nMqtt.Messages
     /// Subcribe message
     /// </summary>
     [MessageType(MessageType.Subscribe)]
-    internal sealed class SubscribeMessage : MqttMessage
+    public sealed class SubscribeMessage : MqttMessage
     {
         /// <summary>
         /// List of the topics to subscribe

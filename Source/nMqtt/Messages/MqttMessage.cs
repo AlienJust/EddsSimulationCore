@@ -5,7 +5,7 @@ namespace nMqtt.Messages {
   /// <summary>
   /// MQTT Message (base class)
   /// </summary>
-  internal abstract class MqttMessage {
+  public abstract class MqttMessage {
     /// <summary>
     /// Header
     /// </summary>
@@ -20,6 +20,11 @@ namespace nMqtt.Messages {
 
     public virtual void Encode(Stream stream) => FixedHeader.WriteTo(stream);
 
+    
+    /// <summary>
+    /// Each type releases decoding itself 
+    /// </summary>
+    /// <param name="stream"></param>
     protected virtual void Decode(Stream stream) { }
 
     public static MqttMessage DecodeMessage(byte[] buffer) {

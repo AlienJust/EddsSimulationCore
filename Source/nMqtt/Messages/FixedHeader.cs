@@ -6,7 +6,7 @@ namespace nMqtt.Messages {
   /// <summary>
   /// The message header for each MQTT command message contains a fixed header (2 bytes)
   /// </summary>
-  internal class FixedHeader
+  public class FixedHeader
   {
     /// <summary>
     /// Message Type (b1.7-4)
@@ -45,7 +45,7 @@ namespace nMqtt.Messages {
 
       var byte1 = stream.ReadByte();
       MessageType = (MessageType)((byte1 & 0xf0) >> 4);
-      Dup = ((byte1 & 0x08) >> 3) > 0;
+      Dup = (byte1 & 0x08) >> 3 > 0;
       Qos = (Qos)((byte1 & 0x06) >> 1);
       Retain = (byte1 & 0x01) > 0;
 
