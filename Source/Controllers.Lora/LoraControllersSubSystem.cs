@@ -59,23 +59,30 @@ namespace Controllers.Lora {
     private readonly int _mqttBrokerPort = 1883; // std port is 1883 TCP  // TODO: Move to config file
 
     private readonly AutoResetEvent _prevSubscribeIsComplete;
+    private readonly ManualResetEvent _initComplete;
 
     public LoraControllersSubSystem() {
       _backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker", a=>a(), ThreadPriority.BelowNormal, true, null);
       _prevSubscribeIsComplete = new AutoResetEvent(false);
-        
+      _initComplete = new ManualResetEvent(false);
+      
+      _loraControllersByRxTopicName = new Dictionary<string, LoraController>();
+      
       _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
       _mqttClient.Port = _mqttBrokerPort;
 
       _mqttClient.OnMessageReceived += OnMessageReceived;
       _mqttClient.ConnectAsync().Wait();
-      Log.Log("MQTT connected?");
+      
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos = new List<LoraControllerInfoSimple> {
         new LoraControllerInfoSimple("lora99", "be7a0000000000c8")
         , new LoraControllerInfoSimple("lora100", "be7a0000000000c9")
       };
-      _loraControllersByRxTopicName = new Dictionary<string, LoraController>();
+      
+      Log.Log("Waits until all RX topics would be subscribed...");
+      _initComplete.WaitOne();
+      Log.Log(".ctor complete");
     }
 
     private void OnMessageReceived(MqttMessage message) {
@@ -87,7 +94,7 @@ namespace Controllers.Lora {
             _loraControllersByRxTopicName.Clear();
             foreach (var loraControllerInfo in _loraControllerInfos) {
               var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
-              var txTopicName = _mqttClient + loraControllerInfo.DeviceId + "/tx";
+              var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
               _loraControllersByRxTopicName.Add(rxTopicName, new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient));
               Log.Log("Subscribing for topic: " + rxTopicName);
               Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
@@ -95,7 +102,9 @@ namespace Controllers.Lora {
               //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
               _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
               Log.Log("Subscribed for topic" + rxTopicName + " OK");
-            }            
+            }
+
+            _initComplete.Set();
           });
           break;
 
