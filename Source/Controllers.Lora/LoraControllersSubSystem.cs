@@ -70,22 +70,20 @@ namespace Controllers.Lora {
       _initComplete = new ManualResetEvent(false);
       _initException = null;
 
+      _loraControllerInfos = new List<LoraControllerInfoSimple> {
+        new LoraControllerInfoSimple("lora99", "be7a0000000000c8")
+        , new LoraControllerInfoSimple("lora100", "be7a0000000000c9")
+      };
       _loraControllersByRxTopicName = new Dictionary<string, LoraController>();
 
       _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
       _mqttClient.Port = _mqttBrokerPort;
 
       _mqttClient.SomeMessageReceived += OnMessageReceived;
-      var connectionState = _mqttClient.ConnectAsync().Result;
-      //if (connectionState != ConnectionState.Connected) {
-      //throw new Exception("Cannot connect to MQTT broker");
-      //}
+      _mqttClient.ConnectAsync();
 
       _mqttTopicStart = "application/1/node/";
-      _loraControllerInfos = new List<LoraControllerInfoSimple> {
-        new LoraControllerInfoSimple("lora99", "be7a0000000000c8")
-        , new LoraControllerInfoSimple("lora100", "be7a0000000000c9")
-      };
+      
 
       Log.Log("Waits until all RX topics would be subscribed...");
       _initComplete.WaitOne();
