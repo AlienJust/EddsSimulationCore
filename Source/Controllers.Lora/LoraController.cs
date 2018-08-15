@@ -61,8 +61,8 @@ namespace Controllers.Lora {
       }
     }
 
-    public void GetDataInCallback(int command, IEnumerable<byte> data,
-      Action<Exception, IEnumerable<byte>> callback) {
+    public void GetDataInCallback(int command, IReadOnlyList<byte> data,
+      Action<Exception, IReadOnlyList<byte>> callback) {
       if (command == 6) {
         var result = data.ToList();
         if (result[3] == 0) {

@@ -9,18 +9,19 @@ using Audience;
 
 namespace Controllers.Bumiz {
   internal static class XmlFactory {
-    private static readonly ILogger Log = new RelayMultiLogger(
-      true,
-      new RelayLogger(Env.GlobalLog,
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor),
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+    private static readonly ILogger Log = new RelayMultiLogger(true
+      , new RelayLogger(Env.GlobalLog
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        }))
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor)
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        })));
 
-    public static IEnumerable<IBumizControllerInfo> GetBumizObjectInfosFromXml(string filename) {
+    public static List<IBumizControllerInfo> GetBumizObjectInfosFromXml(string filename) {
       var bumizControllerInfos = new List<IBumizControllerInfo>();
-      Log.Log("���������� ���������� �� �������� ����� �� XML ����� ������������...");
+      Log.Log("Loading BUMIZ controllers configuration from XML...");
 
       var docChannels = XDocument.Load(filename);
       {
@@ -37,19 +38,17 @@ namespace Controllers.Bumiz {
               var pulses2Expression = bumizObjectElement.Attribute("Pulse2Correction").Value;
               var pulses3Expression = bumizObjectElement.Attribute("Pulse3Correction").Value;
 
-              bumizControllerInfos.Add(new BumizControllerInfo(bumizObjectName, currentDataCacheTtlSeconds,
-                pulses1Expression, pulses2Expression, pulses3Expression));
-              Log.Log("���������� �� ������� ����� " + bumizObjectName + " ����������������");
+              bumizControllerInfos.Add(new BumizControllerInfo(bumizObjectName, currentDataCacheTtlSeconds
+                , pulses1Expression, pulses2Expression, pulses3Expression));
+              Log.Log("Loaded BUMIZ XML config for object with name " + bumizObjectName);
             }
             catch (Exception ex) {
-              Log.Log("�� ������� ���������������� ���������� �� ������� �����");
-              Log.Log(ex.ToString());
+              Log.Log("Error loading BUMIZ XML config: " + ex);
             }
           }
         }
       }
-      Log.Log("���������� �� �������� ����� ���� ��������� �� XML �����, ����� ��������: " +
-              bumizControllerInfos.Count);
+      Log.Log("BUMIZ XML config loaded, objects count is " + bumizControllerInfos.Count);
       return bumizControllerInfos;
     }
   }

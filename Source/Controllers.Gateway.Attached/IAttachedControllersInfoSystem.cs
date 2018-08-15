@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-
 namespace Controllers.Gateway.Attached {
   public interface IAttachedControllersInfoSystem {
-    IEnumerable<IAttachedControllerInfo> AttachedControllerInfos { get; }
+    string GetAttachedControllerNameByConfig(string gateway, int channel, int type, int number);
   }
 }

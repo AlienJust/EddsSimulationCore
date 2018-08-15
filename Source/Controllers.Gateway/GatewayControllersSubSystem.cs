@@ -39,11 +39,11 @@ namespace Controllers.Gateway {
         GatewayesXmlFactory.GetGatewaysConfigFromXml(Path.Combine(Env.CfgPath, "GatewayControllerInfos.xml"));
     }
 
-    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, byte[] data,
-      Action notifyOperationComplete, Action<int, IEnumerable<byte>> sendReplyAction) {
+    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, IReadOnlyList<byte> data,
+      Action notifyOperationComplete, Action<int, IReadOnlyList<byte>> sendReplyAction) {
       try {
-        Log.Log("Получены данные для контроллера " + subObjectName + ": код команды=" + commandCode +
-                ", байты данных: " + data.ToText());
+        Log.Log("Received data request for object: " + subObjectName + ", command code is: " + commandCode +
+                ", data bytes are: " + data.ToText());
         var controller = _controllers.FirstOrDefault(c => c.Name == subObjectName);
         if (controller != null) {
           try {
@@ -51,16 +51,14 @@ namespace Controllers.Gateway {
             controller.GetDataInCallback(commandCode, data, (exception, bytes) => {
               try {
                 if (exception != null) {
-                  Log.Log("Контроллер " + subObjectName + " создал исключение: " + exception);
+                  Log.Log("Controller " + subObjectName + " has thrown exception: " + exception);
                   return;
                 }
 
                 var dataToSend = bytes.ToArray();
-                Log.Log("Будут отправлены следующие данные от объекта " + subObjectName + ": " + dataToSend.ToText());
+                Log.Log(subObjectName + " object returned reply, data bytes are: " + dataToSend.ToText());
                 sendReplyAction((byte) (commandCode + 10), dataToSend);
-                //_gateway.SendData(uplinkName, subObjectName, (byte) (commandCode + 10), dataToSend);
-                Log.Log("Данные были отправлены от лица контроллера " + subObjectName + ", байты данных: " +
-                        dataToSend.ToText());
+                Log.Log(subObjectName + " object data was sended, data bytes are: " + dataToSend.ToText());
               }
               catch (Exception ex) {
                 Log.Log("При обработке ответа от контроллера возникло исключение: " + ex);

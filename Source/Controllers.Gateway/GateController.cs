@@ -4,6 +4,9 @@ using System.Linq;
 using Controllers.Contracts;
 
 namespace Controllers.Gateway {
+  /// <summary>
+  /// Controller-Computer :)
+  /// </summary>
   class GateController : IController {
     private readonly Random _random = new Random();
     public string Name { get; }
@@ -12,7 +15,7 @@ namespace Controllers.Gateway {
       Name = name;
     }
 
-    public void GetDataInCallback(int command, IEnumerable<byte> data, Action<Exception, IEnumerable<byte>> callback) {
+    public void GetDataInCallback(int command, IReadOnlyList<byte> data, Action<Exception, IReadOnlyList<byte>> callback) {
       try {
         switch (command) {
           case 1:

@@ -20,13 +20,15 @@ using PollServiceProxy.Contracts;
 namespace Controllers.Bumiz {
   [Export(typeof(ICompositionPart))]
   public class BumizControllersSubSystem : CompositionPartBase, ISubSystem {
-    private static readonly ILogger Log = new RelayMultiLogger(true,
-      new RelayLogger(Env.GlobalLog,
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkCyan, Console.BackgroundColor),
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+    private static readonly ILogger Log = new RelayMultiLogger(true
+      , new RelayLogger(Env.GlobalLog
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        }))
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkCyan, Console.BackgroundColor)
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        })));
 
     private ICompositionPart _bumizIoManagerPart;
     private IBumizIoManager _bumizIoManager;
@@ -45,7 +47,7 @@ namespace Controllers.Bumiz {
 
 
     private ICompositionRoot _compositionRoot;
-    private readonly IEnumerable<IBumizControllerInfo> _bumizControllerInfos;
+    private readonly List<IBumizControllerInfo> _bumizControllerInfos;
     private readonly List<IController> _bumizControllers;
 
 
@@ -57,15 +59,15 @@ namespace Controllers.Bumiz {
       _bumizControllers = new List<IController>();
     }
 
-    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, byte[] data,
-      Action notifyOperationComplete, Action<int, IEnumerable<byte>> sendReplyAction) {
+    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, IReadOnlyList<byte> data,
+      Action notifyOperationComplete, Action<int, IReadOnlyList<byte>> sendReplyAction) {
       bool
         isBumizControllerFound =
           false; // Если найден, то контроллер должен гарантировать выполнение вызова notifyOperationComplete
       try {
         Log.Log("Поступили данные от шлюза для объекта " + subObjectName + ", код команды = " + commandCode +
                 ", данные: " + data.ToText());
-        if (commandCode == 6 && data.Length >= 8) {
+        if (commandCode == 6 && data.Count >= 8) {
           var channel = data[0];
           var type = data[1];
           var number = data[2];
@@ -83,48 +85,37 @@ namespace Controllers.Bumiz {
             Log.Log("Проверка объекта " + gatewayControllerInfo.Name);
             if (gatewayControllerInfo.Name == subObjectName) {
               Log.Log("Объект-шлюз найден, поиск подключенного объекта...");
-              foreach (var attachedControllerInfo in _attachedControllersInfoSystem.AttachedControllerInfos) {
-                Log.Log("Проверка подключаемого объекта " + attachedControllerInfo.Name);
-                if (attachedControllerInfo.Channel == channel && attachedControllerInfo.Type == type &&
-                    attachedControllerInfo.Number == number) {
-                  Log.Log("Подключаемый объект найден, поиск соответствующего объекта БУМИЗ...");
-                  var bumizObjName = attachedControllerInfo.Name;
+              var attachedControllerName =
+                _attachedControllersInfoSystem.GetAttachedControllerNameByConfig(subObjectName, channel, type, number);
+              Log.Log("Подключаемый объект найден, поиск соответствующего объекта БУМИЗ...");
 
-                  foreach (var bumizController in _bumizControllers) {
-                    Log.Log("Проверка объекта БУМИЗ " + bumizController.Name);
-                    if (bumizObjName == bumizController.Name) {
-                      Log.Log("Объект БУМИЗ найден, запрос данных от объекта...");
-                      isBumizControllerFound = true;
-                      //IGatewayControllerInfo info = gatewayControllerInfo; // для замыкания
-                      bumizController.GetDataInCallback(
-                        commandCode,
-                        data,
-                        (exception, bytes) => {
-                          try {
-                            if (exception == null) {
-                              Log.Log("Данные от объекта БУМИЗ получены: " + bytes.ToText()); // TODO remove double enum
-                              sendReplyAction((byte) (commandCode + 10), bytes.ToArray());
-                              Log.Log("Данные от объекта БУМИЗ были отправлены в шлюз");
-                              return;
-                            }
+              foreach (var bumizController in _bumizControllers) {
+                Log.Log("Проверка объекта БУМИЗ " + bumizController.Name);
+                if (bumizController.Name == attachedControllerName) {
+                  Log.Log("Объект БУМИЗ найден, запрос данных от объекта...");
+                  isBumizControllerFound = true;
+                  //IGatewayControllerInfo info = gatewayControllerInfo; // для замыкания
+                  bumizController.GetDataInCallback(commandCode, data, (exception, bytes) => {
+                    try {
+                      if (exception == null) {
+                        Log.Log("Данные от объекта БУМИЗ получены: " + bytes.ToText()); // TODO remove double enum
+                        sendReplyAction((byte) (commandCode + 10), bytes.ToArray());
+                        Log.Log("Данные от объекта БУМИЗ были отправлены в шлюз");
+                        return;
+                      }
 
-                            Log.Log("Ошибка при запросе к БУМИЗ контроллеру: " + exception);
-                          }
-                          catch (Exception ex) {
-                            Log.Log("При обработке ответа от объекта БУМИЗ возникло исключение: " + ex);
-                          }
-                          finally {
-                            notifyOperationComplete(); // выполняется в другом потоке
-                          }
-                        });
-                      break; // Далее связный с подключаемым объектом контроллер БУМИЗ искать не нужно
+                      Log.Log("Ошибка при запросе к БУМИЗ контроллеру: " + exception);
                     }
-                  }
-
-                  break; // Далее подключаемый к шлюзу объект искать не нужно
+                    catch (Exception ex) {
+                      Log.Log("При обработке ответа от объекта БУМИЗ возникло исключение: " + ex);
+                    }
+                    finally {
+                      notifyOperationComplete(); // выполняется в другом потоке
+                    }
+                  });
+                  break; // Далее связный с подключаемым объектом контроллер БУМИЗ искать не нужно
                 }
               }
-
               break; // далее шлюз искать не нужно
             }
           }
@@ -135,7 +126,7 @@ namespace Controllers.Bumiz {
       }
       finally {
         if (!isBumizControllerFound) {
-          notifyOperationComplete();
+          notifyOperationComplete(); // cause I need to ensure callback is called
         }
       }
     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Composition;
-using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -70,20 +70,16 @@ namespace Controllers.Lora {
       _initComplete = new ManualResetEvent(false);
       _initException = null;
 
-      _loraControllerInfos = new List<LoraControllerInfoSimple> {
-        new LoraControllerInfoSimple("lora99", "be7a0000000000c8")
-        , new LoraControllerInfoSimple("lora100", "be7a0000000000c9")
-      };
+      _loraControllerInfos = XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
       _loraControllersByRxTopicName = new Dictionary<string, LoraController>();
 
-      _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
-      _mqttClient.Port = _mqttBrokerPort;
+      _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};
 
       _mqttClient.SomeMessageReceived += OnMessageReceived;
       _mqttClient.ConnectAsync();
 
       _mqttTopicStart = "application/1/node/";
-      
+
 
       Log.Log("Waits until all RX topics would be subscribed...");
       _initComplete.WaitOne();
@@ -154,7 +150,6 @@ namespace Controllers.Lora {
       Log.Log("Подсистема подключаемых контроллеров LORA инициализирована, число контроллеров: " +
               _loraControllersByRxTopicName.Count);
 
-
       _attachedControllersInfoSystemPart = _compositionRoot.GetPartByName("GatewayAttachedControllers");
       _attachedControllersInfoSystem = _attachedControllersInfoSystemPart as IAttachedControllersInfoSystem;
       if (_attachedControllersInfoSystem == null)
@@ -176,70 +171,60 @@ namespace Controllers.Lora {
     }
 
 
-    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, byte[] data
-      , Action notifyOperationComplete, Action<int, IEnumerable<byte>> sendReplyAction) {
-      bool isLoraControllerFound =
-        false; // Если найден, то контроллер должен гарантировать выполнение вызова notifyOperationComplete
+    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, IReadOnlyList<byte> data
+      , Action notifyOperationComplete, Action<int, IReadOnlyList<byte>> sendReplyAction) {
+      bool isLoraControllerFound = false; // if found - контроллер должен выполненить вызов notifyOperationComplete
       try {
-        Log.Log("Поступили данные от шлюза для объекта " + subObjectName + ", код команды = " + commandCode +
-                ", данные: " + data.ToText());
-        if (commandCode == 6 && data.Length >= 8) {
+        Log.Log("Received data request for object: " + subObjectName + ", command code is: " + commandCode +
+                ", data bytes are: " + data.ToText());
+
+        if (commandCode == 6 && data.Count >= 8) {
           var channel = data[0];
           var type = data[1];
           var number = data[2];
-          Log.Log("Код команды и длина данных позволяют работать дальше, канал=" + channel + ", тип=" + type +
-                  ", номер=" + number);
+          Log.Log("Command code and data length are correct, att_channel=" + channel + ", att_type=" + type +
+                  ", att_number=" + number);
 
           if (type != 50) {
-            Log.Log(
-              "Тип счетчика не равен 50, обработка такой команды подсистемой LORA контроллеров не осуществляется");
+            Log.Log("Att_type != 50, LORA controllers subsystem does not handling such (" + type +
+                    ") att_type, return");
             return;
           }
 
-          Log.Log("Поиск объекта-шлюза...");
+          Log.Log("Searching intellectual modem object");
           foreach (var gatewayControllerInfo in _gatewayControllesManager.GatewayControllerInfos) {
-            Log.Log("Проверка объекта " + gatewayControllerInfo.Name);
+            Log.Log("Checking object " + gatewayControllerInfo.Name);
             if (gatewayControllerInfo.Name == subObjectName) {
-              Log.Log("Объект-шлюз найден, поиск подключенного объекта...");
-              foreach (var attachedControllerInfo in _attachedControllersInfoSystem.AttachedControllerInfos) {
-                Log.Log("Проверка подключаемого объекта " + attachedControllerInfo.Name + " ch=" +
-                        attachedControllerInfo.Channel + ", number=" + attachedControllerInfo.Number + ", type=" +
-                        attachedControllerInfo.Type);
-                if (attachedControllerInfo.Channel == channel && attachedControllerInfo.Type == type &&
-                    attachedControllerInfo.Number == number) {
-                  Log.Log("Подключаемый объект найден, поиск соответствующего объекта LORA...");
-                  var loraObjName = attachedControllerInfo.Name;
+              Log.Log("Intellectual modem found, now searching for attached object information...");
+              var attachedControllerName =
+                _attachedControllersInfoSystem.GetAttachedControllerNameByConfig(subObjectName, channel, type, number);
 
-                  foreach (var loraControllerWithRxTopic in _loraControllersByRxTopicName) {
-                    var loraController = loraControllerWithRxTopic.Value;
-                    Log.Log("Проверка объекта LORA " + loraController.Name);
-                    if (loraObjName == loraController.Name) {
-                      Log.Log("Объект LORA найден, запрос данных от объекта...");
-                      isLoraControllerFound = true;
+              foreach (var loraControllerWithRxTopic in _loraControllersByRxTopicName) {
+                var loraController = loraControllerWithRxTopic.Value;
+                Log.Log("Checking LORA controller with name " + loraController.Name);
+                if (attachedControllerName == loraController.Name) {
+                  Log.Log("LORA controller was found, asking it for data...");
+                  isLoraControllerFound =
+                    true; // if found, code below must guarantee that notifyOperationComplete() would be called
+                  loraController.GetDataInCallback(commandCode, data, (exception, bytes) => {
+                    try {
+                      if (exception == null) {
+                        Log.Log("Данные от объекта LORA получены: " + bytes.ToText()); // TODO remove double enum
+                        sendReplyAction((byte) (commandCode + 10), bytes.ToArray());
+                        Log.Log("Данные от объекта LORA были отправлены в шлюз");
+                        return;
+                      }
 
-                      loraController.GetDataInCallback(commandCode, data, (exception, bytes) => {
-                        try {
-                          if (exception == null) {
-                            Log.Log("Данные от объекта LORA получены: " + bytes.ToText()); // TODO remove double enum
-                            sendReplyAction((byte) (commandCode + 10), bytes.ToArray());
-                            Log.Log("Данные от объекта LORA были отправлены в шлюз");
-                            return;
-                          }
-
-                          Log.Log("Ошибка при запросе к LORA контроллеру: " + exception);
-                        }
-                        catch (Exception ex) {
-                          Log.Log("При обработке ответа от объекта LORA возникло исключение: " + ex);
-                        }
-                        finally {
-                          notifyOperationComplete(); // выполняется в другом потоке
-                        }
-                      });
-                      break; // Далее связный с подключаемым объектом контроллер БУМИЗ искать не нужно
+                      Log.Log("Ошибка при запросе к LORA контроллеру: " + exception);
                     }
-                  }
-
-                  break; // Далее подключаемый к шлюзу объект искать не нужно
+                    catch (Exception ex) {
+                      Log.Log("При обработке ответа от объекта LORA возникло исключение: " + ex);
+                    }
+                    finally {
+                      notifyOperationComplete(); // выполняется в другом потоке
+                    }
+                  });
+                  break; // Далее связный с подключаемым объектом контроллер LORA искать не нужно
                 }
               }
 

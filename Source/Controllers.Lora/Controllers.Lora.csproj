@@ -49,4 +49,9 @@
       <HintPath>..\References\AJ.Std.Text.Contracts.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <None Update="cfg\LoraControllerInfos.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

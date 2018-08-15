@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Composition;
 using System.IO;
 using AJ.Std.Composition;
@@ -14,7 +15,7 @@ namespace Controllers.Gateway.Attached {
         XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));
     }
 
-    public IEnumerable<IAttachedControllerInfo> AttachedControllerInfos { get; }
+    private IReadOnlyDictionary<AttachedObjectConfig, string> AttachedControllerInfos { get; }
 
 
     public override void SetCompositionRoot(ICompositionRoot root) {
@@ -26,5 +27,15 @@ namespace Controllers.Gateway.Attached {
     public override void BecameUnused() {
       // Unload all c.parts here
     }
+
+    public string GetAttachedControllerNameByConfig(string gateway, int channel, int type, int number) {
+      var key = new AttachedObjectConfig(gateway, channel, type, number);
+      if (!AttachedControllerInfos.ContainsKey(key)) {
+        throw new AttachedControllerNotFoundException();
+      }
+      return AttachedControllerInfos[key];
+    }
   }
+
+  public class AttachedControllerNotFoundException : Exception { }
 }

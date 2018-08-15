@@ -10,17 +10,19 @@ using Controllers.Gateway.Attached;
 
 namespace GatewayAttachedControllers {
   internal static class XmlFactory {
-    private static readonly ILogger Log = new RelayMultiLogger(true,
-      new RelayLogger(Env.GlobalLog,
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor),
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+    private static readonly ILogger Log = new RelayMultiLogger(true
+      , new RelayLogger(Env.GlobalLog
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        }))
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor)
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        })));
 
-    public static IEnumerable<IAttachedControllerInfo> GetCounterCorrectionInfosFromXml(string filename) {
-      var attachedControllerInfos = new List<IAttachedControllerInfo>();
-      Log.Log("���������� ���������� � ������������ ������������");
+    public static IReadOnlyDictionary<AttachedObjectConfig, string> GetCounterCorrectionInfosFromXml(string filename) {
+      var attachedControllerInfos = new Dictionary<AttachedObjectConfig, string>();
+      Log.Log("Gateway.Attached > loading XML config");
 
       var docChannels = XDocument.Load(filename);
       {
@@ -35,23 +37,18 @@ namespace GatewayAttachedControllers {
               var attachedControllerNumber = int.Parse(attachedControllerInfoElement.Attribute("Number").Value);
               var attachedControllerName = attachedControllerInfoElement.Attribute("Name").Value;
 
-              attachedControllerInfos.Add(new AttachedControllerInfo(
-                attachedControllerGateway,
-                attachedControllerChannel,
-                attachedControllerType,
-                attachedControllerNumber,
-                attachedControllerName
-              ));
-              Log.Log("���������� � ������������ ����������� " + attachedControllerName + " ����������������");
+              attachedControllerInfos.Add(
+                new AttachedObjectConfig(attachedControllerGateway, attachedControllerChannel, attachedControllerType
+                  , attachedControllerNumber), attachedControllerName);
+              Log.Log("AttachedControllerInfo " + attachedControllerName + " loaded from XML");
             }
             catch (Exception ex) {
-              Log.Log("�� ������� ���������������� ���������� � ������������ �����������");
-              Log.Log(ex.ToString());
+              Log.Log("Error during loading XML attached config: " + ex);
             }
           }
         }
       }
-      Log.Log("���������� � ������������ ������������ ���� ��������� �� XML �����, ����� ��������: " +
+      Log.Log("Loading attachedControllerInfos from XML is complete, attached infos count is: " +
               attachedControllerInfos.Count);
       return attachedControllerInfos;
     }

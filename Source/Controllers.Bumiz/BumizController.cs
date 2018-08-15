@@ -21,7 +21,7 @@ namespace Controllers.Bumiz {
 		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGray, Console.BackgroundColor), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
 		private readonly TimeSpan _cacheTtl;
 		private DateTime? _lastCurrentDataRequestTime;
-		private IEnumerable<byte> _lastCurrentDataResult;
+		private IReadOnlyList<byte> _lastCurrentDataResult;
 
 		private readonly IBumizIoManager _bumiz;
 		private readonly IPulseCounterDataStorageHolder _pcStorageHolder;
@@ -37,7 +37,7 @@ namespace Controllers.Bumiz {
 			_cacheTtl = TimeSpan.FromSeconds(_bumizControllerInfo.CurrentDataCacheTtlSeconds);
 		}
 
-		public void GetDataInCallback(int command, IEnumerable<byte> data, Action<Exception, IEnumerable<byte>> callback) {
+		public void GetDataInCallback(int command, IReadOnlyList<byte> data, Action<Exception, IReadOnlyList<byte>> callback) {
 			if (command == 6) {
 				var result = data.ToList();
 				if (result[3] == 0) {
@@ -151,9 +151,9 @@ namespace Controllers.Bumiz {
 							expression.Parameters.Add("p3", storedIntegral.ImpulsesCount3);
 						}
 
-						var rp1 = (float)((double)exps[0].Evaluate());
-						var rp2 = (float)((double)exps[1].Evaluate());
-						var rp3 = (float)((double)exps[2].Evaluate());
+						var rp1 = (float)(double)exps[0].Evaluate();
+						var rp2 = (float)(double)exps[1].Evaluate();
+						var rp3 = (float)(double)exps[2].Evaluate();
 
 						result.AddRange(rp1.ToBytes());
 						result.AddRange(rp2.ToBytes());

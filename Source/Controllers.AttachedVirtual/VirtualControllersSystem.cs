@@ -31,11 +31,11 @@ namespace Controllers.AttachedVirtual {
 
     public string SystemName => CommonName;
 
-    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, byte[] data,
-      Action notifyOperationComplete, Action<int, IEnumerable<byte>> sendReplyAction) {
+    public void ReceiveData(string uplinkName, string subObjectName, byte commandCode, IReadOnlyList<byte> data,
+      Action notifyOperationComplete, Action<int, IReadOnlyList<byte>> sendReplyAction) {
       try {
         if (!_isDataProcessingEnabled) return;
-        if (commandCode == 6 && data.Length >= 8) {
+        if (commandCode == 6 && data.Count >= 8) {
           var channel = data[0];
           var type = data[1];
           if (type == 250) throw new Exception("Виртуальные данные не будут отправлены");

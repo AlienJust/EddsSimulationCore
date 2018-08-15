@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<LoraObjetcs>
+	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora99" DeviceId="be7a0000000000c8" />
+	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora100" DeviceId="be7a0000000000c9" />
+</LoraObjetcs>

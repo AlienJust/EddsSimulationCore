@@ -4,7 +4,7 @@ using ScadaClient.Udp;
 
 namespace PollServiceProxy {
   /// <summary>
-  /// ���������� ����������
+  /// Link to SCADA with name simple release
   /// </summary>
   internal class NamedScadaLinkSimple : INamedScadaLink {
     private readonly IScadaClient _link;
@@ -14,8 +14,7 @@ namespace PollServiceProxy {
 
     public NamedScadaLinkSimple(string name, IScadaClient link) {
       Name = name;
-      _link = link ?? throw new NullReferenceException(
-                "������ �������� ������� IScadaClient �� ����� ����� �������� null");
+      _link = link ?? throw new NullReferenceException(nameof(link));
       _link.DataReceived += LinkOnDataReceived;
       _link.Disconnected += LinkOnDisconnected;
     }
