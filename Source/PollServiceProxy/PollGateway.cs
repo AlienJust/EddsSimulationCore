@@ -19,13 +19,15 @@ using ScadaClient.Contracts;
 namespace PollServiceProxy {
   [Export(typeof(ICompositionPart))]
   public sealed class PollGateway : CompositionPartBase, IPollGateway, ISubSystemRegistrationPoint {
-    private static readonly ILogger Log = new RelayMultiLogger(true,
-      new RelayLogger(Env.GlobalLog,
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Cyan, Console.BackgroundColor),
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+    private static readonly ILogger Log = new RelayMultiLogger(true
+      , new RelayLogger(Env.GlobalLog
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        }))
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Cyan, Console.BackgroundColor)
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        })));
 
     private readonly Dictionary<string, INamedScadaLink> _scadaClients;
     private readonly Dictionary<string, IScadaObjectInfo> _scadaObjects;
@@ -50,17 +52,6 @@ namespace PollServiceProxy {
 
     public override void SetCompositionRoot(ICompositionRoot root) {
       _compositionRoot = root;
-      //_internalSystems.AddRange(_compositionRoot.Compositions.OfType<ISubSystem>());
-
-      //foreach (var subSystem in _internalSystems) {
-      //subSystem.SetGateway(this);
-      //}
-
-      //Log.Log("��������� ��������� ����������: (���������� = " + _internalSystems.Count + ")");
-      //foreach (var internalSystem in _internalSystems) {
-      //Log.Log(internalSystem.SystemName);
-      //}
-
 
       if (_microPacketSendThread.ThreadState == ThreadState.Unstarted) {
         foreach (var scadaObjectInfo in _scadaObjects) {
@@ -68,9 +59,17 @@ namespace PollServiceProxy {
             // TODO: strategy selection:
             // TODO: Add to XML configuration
             // TODO: strategy: if working then drop 
-            // TODO:    or   : if working then enqueue
-            _perScadaAddressWorkers.Add(scadaAddress,
-              new WorkerSingleThreadedRelayDrop<Action>(a => a(), ThreadPriority.BelowNormal, true, null));
+            // TODO:    or   : if working then enqueue [ USING this strategy NOW ]
+            _perScadaAddressWorkers.Add(scadaAddress
+              , new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>(scadaAddress.ToString(), a => {
+                Log.Log("Executing in object's " + scadaAddress.ToString() + " thread action");
+                try {
+                  a();
+                }
+                catch (Exception exception) {
+                  Log.Log(exception);
+                }
+              }, ThreadPriority.BelowNormal, true, null));
           }
         }
 
@@ -82,7 +81,8 @@ namespace PollServiceProxy {
         Log.Log("PollGateway.SetCompositionRoot is complete OK");
       }
       else {
-        Log.Log("PollGateway.SetCompositionRoot something strange, micropackets send thread was allready started! ER");
+        Log.Log(
+          "PollGateway.SetCompositionRoot something strange, micro-packets send thread was already started! [ER]");
       }
     }
 
@@ -91,7 +91,7 @@ namespace PollServiceProxy {
       try {
         var scadaClient = sender as INamedScadaLink;
         if (scadaClient == null) {
-          Log.Log("OnScadaLinkDataReceived INamedScadaLink, something wrong, scadaClient is null! ER");
+          Log.Log("OnScadaLinkDataReceived INamedScadaLink, something wrong, scadaClient is null! [ER]");
           return;
         }
 
@@ -104,33 +104,28 @@ namespace PollServiceProxy {
               //var scadaObjectNetAddress = objectScadaAddress.NetAddress;
 
               Log.Log("Object with address " + objectScadaAddress + " was found, need to notify subsystem");
-              _perScadaAddressWorkers[objectScadaAddress].AddWork(
-                () => {
-                  var counter = new WaitableCounter(0);
-                  foreach (var internalSystem in _internalSystems) {
-                    try {
-                      Log.Log("Notifying internal system " + internalSystem.SystemName);
-                      counter.IncrementCount();
+              _perScadaAddressWorkers[objectScadaAddress].AddWork(() => {
+                var counter = new WaitableCounter(0);
+                foreach (var internalSystem in _internalSystems) {
+                  try {
+                    Log.Log("Notifying internal system " + internalSystem.SystemName);
+                    counter.IncrementCount();
 
-                      internalSystem.ReceiveData(
-                        scadaClient.Name,
-                        scadaObjectName,
-                        eventArgs.CommandCode,
-                        eventArgs.Data,
-                        counter.DecrementCount,
-                        (code, reply) =>
-                          SendReplyData(scadaClient.Name, scadaObjectNetAddress, (byte) code, reply.ToArray()));
-                    }
-                    catch (Exception ex) {
-                      Log.Log("Something wrong during internal systems notification: " + ex);
-                      //counter.DecrementCount(); // TODO: do I really need this?
-                    }
+                    internalSystem.ReceiveData(scadaClient.Name, scadaObjectName, eventArgs.CommandCode, eventArgs.Data
+                      , counter.DecrementCount
+                      , (code, reply) =>
+                        SendReplyData(scadaClient.Name, scadaObjectNetAddress, (byte) code, reply.ToArray()));
                   }
+                  catch (Exception ex) {
+                    Log.Log("Something wrong during internal systems notification: " + ex);
+                    //counter.DecrementCount(); // TODO: do I really need this?
+                  }
+                }
 
-                  Log.Log("All internal systems were notified");
-                  counter.WaitForCounterChangeWhileNotPredecate(c => c == 0);
-                  Log.Log("All internal systems reported back about notify");
-                });
+                Log.Log("All internal systems were notified");
+                counter.WaitForCounterChangeWhileNotPredecate(c => c == 0);
+                Log.Log("All internal systems reported back about notify");
+              });
               break;
             }
           }
