@@ -62,13 +62,14 @@ namespace Controllers.Lora {
 
     public LoraControllersSubSystem() {
       _backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker", a=>a(), ThreadPriority.BelowNormal, true, null);
+      _prevSubscribeIsComplete = new AutoResetEvent(false);
         
       _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
       _mqttClient.Port = _mqttBrokerPort;
 
       _mqttClient.OnMessageReceived += OnMessageReceived;
       _mqttClient.ConnectAsync().Wait();
-
+      Log.Log("MQTT connected?");
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos = new List<LoraControllerInfoSimple> {
         new LoraControllerInfoSimple("lora99", "be7a0000000000c8")
@@ -81,15 +82,18 @@ namespace Controllers.Lora {
       switch (message) {
         case ConnAckMessage msg:
           Console.WriteLine("---- OnConnAck");
+          Log.Log("MQTT connected OK");
           _backWorker.AddWork(() => {
             _loraControllersByRxTopicName.Clear();
             foreach (var loraControllerInfo in _loraControllerInfos) {
               var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
               var txTopicName = _mqttClient + loraControllerInfo.DeviceId + "/tx";
               _loraControllersByRxTopicName.Add(rxTopicName, new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient));
+              Log.Log("Subscribing for topic: " + rxTopicName + "...");
               _mqttClient.Subscribe(rxTopicName, Qos.AtLeastOnce);
               //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
               _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
+              Log.Log("Subscribed for topic" + rxTopicName + " OK");
             }            
           });
           break;
