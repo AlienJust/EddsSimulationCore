@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -59,31 +60,36 @@ namespace Controllers.Lora {
 
     private readonly AutoResetEvent _prevSubscribeIsComplete;
     private readonly ManualResetEvent _initComplete;
+    private Exception _initException;
 
     public LoraControllersSubSystem() {
-      _backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker", a=>a(), ThreadPriority.BelowNormal, true, null);
+      _backWorker =
+        new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker"
+          , a => a(), ThreadPriority.BelowNormal, true, null);
       _prevSubscribeIsComplete = new AutoResetEvent(false);
       _initComplete = new ManualResetEvent(false);
-      
+      _initException = null;
+
       _loraControllersByRxTopicName = new Dictionary<string, LoraController>();
-      
+
       _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString());
       _mqttClient.Port = _mqttBrokerPort;
 
       _mqttClient.SomeMessageReceived += OnMessageReceived;
       var connectionState = _mqttClient.ConnectAsync().Result;
-      if (connectionState != ConnectionState.Connected) {
-        throw new Exception("Cannot connect to MQTT broker");
-      }
-      
+      //if (connectionState != ConnectionState.Connected) {
+      //throw new Exception("Cannot connect to MQTT broker");
+      //}
+
       _mqttTopicStart = "application/1/node/";
       _loraControllerInfos = new List<LoraControllerInfoSimple> {
         new LoraControllerInfoSimple("lora99", "be7a0000000000c8")
         , new LoraControllerInfoSimple("lora100", "be7a0000000000c9")
       };
-      
+
       Log.Log("Waits until all RX topics would be subscribed...");
       _initComplete.WaitOne();
+      if (_initException != null) throw _initException;
       Log.Log(".ctor complete");
     }
 
@@ -91,22 +97,36 @@ namespace Controllers.Lora {
       switch (message) {
         case ConnAckMessage msg:
           Console.WriteLine("---- OnConnAck");
-          Log.Log("MQTT connected OK");
           _backWorker.AddWork(() => {
-            _loraControllersByRxTopicName.Clear();
-            foreach (var loraControllerInfo in _loraControllerInfos) {
-              var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
-              var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
-              _loraControllersByRxTopicName.Add(rxTopicName, new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient));
-              Log.Log("Subscribing for topic: " + rxTopicName);
-              Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
-              _mqttClient.Subscribe(rxTopicName, Qos.AtLeastOnce);
-              //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
-              _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
-              Log.Log("Subscribed for topic" + rxTopicName + " OK");
-            }
+            try {
+              if (msg.ConnectReturnCode == ConnectReturnCode.ConnectionAccepted) {
+                Log.Log("MQTT connected OK");
 
-            _initComplete.Set();
+                _loraControllersByRxTopicName.Clear();
+                foreach (var loraControllerInfo in _loraControllerInfos) {
+                  var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
+                  var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
+                  _loraControllersByRxTopicName.Add(rxTopicName
+                    , new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient));
+                  Log.Log("Subscribing for topic: " + rxTopicName);
+                  Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
+                  _mqttClient.Subscribe(rxTopicName, Qos.AtLeastOnce);
+                  //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
+                  _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
+                  Log.Log("Subscribed for topic" + rxTopicName + " OK");
+                }
+              }
+              else {
+                Log.Log("Connection error");
+                throw new Exception("Cannot connect to MQTT broker");
+              }
+            }
+            catch (Exception exception) {
+              _initException = new Exception("Cannot init MQTT", exception);
+            }
+            finally {
+              _initComplete.Set();
+            }
           });
           break;
 
