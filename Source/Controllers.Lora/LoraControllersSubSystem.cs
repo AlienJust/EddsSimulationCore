@@ -135,7 +135,6 @@ namespace Controllers.Lora {
           if (_loraControllersByRxTopicName.ContainsKey(msg.TopicName)) {
             _loraControllersByRxTopicName[msg.TopicName].OnMessageReceived(msg);
           }
-
           break;
 
         default:

@@ -14,7 +14,7 @@ namespace Controllers.Lora {
         , new ChainedFormatter(new ITextFormatter[] {
           new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
         }))
-      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor)
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Yellow, Console.BackgroundColor)
         , new ChainedFormatter(new ITextFormatter[] {
           new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
         })));
@@ -27,15 +27,18 @@ namespace Controllers.Lora {
       {
         var objectsElement = docChannels.Element("LoraObjects");
         if (objectsElement != null) {
+          Log.Log("LoraObjects XML node found");
           var objectElements = objectsElement.Elements("LoraObject");
 
           foreach (var objectElement in objectElements) {
             try {
+              Log.Log("Proceeding XML node LoraObjects/LoraObject...");
+
               var objectName = objectElement.Attribute("Name").Value;
               var deviceId = objectElement.Attribute("DeviceId").Value;
-              
+
               var dataTtl = int.Parse(objectElement.Attribute("CurrentDataCacheTtlSeconds").Value);
-              
+
 
               controllerInfos.Add(new LoraControllerInfoSimple(objectName, deviceId, dataTtl));
               Log.Log("Loaded LORA XML config for object with name " + objectName);
@@ -46,7 +49,7 @@ namespace Controllers.Lora {
           }
         }
       }
-      Log.Log("BUMIZ XML config loaded, objects count is " + controllerInfos.Count);
+      Log.Log("LORA XML config loaded, objects count is " + controllerInfos.Count);
       return controllerInfos;
     }
   }
