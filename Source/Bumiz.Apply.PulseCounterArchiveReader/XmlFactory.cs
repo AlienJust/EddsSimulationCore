@@ -13,13 +13,13 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
       new RelayLogger(Env.GlobalLog,
         new ChainedFormatter(new ITextFormatter[]
           {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor),
+      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Green, Console.BackgroundColor),
         new ChainedFormatter(new ITextFormatter[]
           {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
     public static Dictionary<string, IPulseCounterInfo> GetCountersFromXml(string filename) {
       var counterInfos = new Dictionary<string, IPulseCounterInfo>();
-      Log.Log("������ ���������� �� ���������� ��������� ����� �� XML...");
+      Log.Log("Loading BUMIZ pulse counters configs from XML...");
       var docChannels = XDocument.Load(filename);
       {
         var rootNode = docChannels.Element("PulseCounters");
@@ -39,17 +39,16 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
                 0);
 
               counterInfos.Add(counterName, new PulseCounterInfo(counterName, setupDateTime));
-              Log.Log("���������� �� ���������� �������� " + counterName + " ���������, ������� ��������� �� ���� " +
+              Log.Log("Loaded config for counter with name: " + counterName + " it's setup date and time are: " +
                       setupDateTime.ToString("yyyy.MM.dd-HH:mm"));
             }
             catch (Exception ex) {
-              Log.Log("�� ������� ��������� ���������� �� ���������� �������� �� XML");
-              Log.Log(ex.ToString());
+              Log.Log("Error during loading XML configuration for some single BUMIZ pulse counter: " + ex);
             }
           }
         }
       }
-      Log.Log("���������� �� ���������� ��������� ����� ��������� �� XML, ����� ���������: " + counterInfos.Count);
+      Log.Log("BUMIZ pulse counters configurations were loaded from XML, loaded items count is: " + counterInfos.Count);
       return counterInfos;
     }
   }

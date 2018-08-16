@@ -13,19 +13,21 @@ using BumizNetwork.SerialChannel;
 
 namespace BumizIoManager {
   internal static class XmlFactory {
-    private static readonly ILogger Log = new RelayMultiLogger(true,
-      new RelayLogger(Env.GlobalLog,
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkMagenta, ConsoleColor.Black),
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+    private static readonly ILogger Log = new RelayMultiLogger(true
+      , new RelayLogger(Env.GlobalLog
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        }))
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Magenta, ConsoleColor.Black)
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        })));
 
     public static Dictionary<string, IMonoChannel> GetChannelsFromXml(string filename) {
       var channels = new Dictionary<string, IMonoChannel>();
 
       //TODO: make static factory for each iface type
-      Log.Log("���������� ������� ����� �� XML ����� ������������...");
+      Log.Log("Loading BUMIZ IO Manager from XML file " + filename + "...");
       var docChannels = XDocument.Load(filename);
       {
         var rootNode = docChannels.Element("BumizChannels");
@@ -39,28 +41,24 @@ namespace BumizIoManager {
               var onlineCheckTimeSeconds = int.Parse(comChannel.Attribute("OnlineCheckTimeSeconds").Value);
               var checkNetAddress = bool.Parse(comChannel.Attribute("CheckNetAddress").Value);
 
-              Log.Log("����� ������ �� XML = " + channelLabel);
-              Log.Log("�������� COM ����� �� XML = " + comName);
-              Log.Log("�������� ������ ����� �� XML = " + baudRate);
+              Log.Log("Loaded COM channel config from XML with name  " + channelLabel + ", COM port name is " +
+                      comName + ", it's baud rate is " + baudRate);
 
               var subChannel = new SerialChannelSimple(comName, baudRate, 15);
-              Log.Log("����� ����������������� ������ SerialChannelSimple �������� XML ������ �������");
+              Log.Log("SerialChannelSimple was created using XML config [OK]");
 
               var channel = new BumizAdvancedNetwork(subChannel, null, onlineCheckTimeSeconds, checkNetAddress);
-              Log.Log("BumizAdvancedNetwork ������������ �� SerialChannelSimple ���� ������� �������");
+              Log.Log("BumizAdvancedNetwork was created base on SerialChannelSimple [OK]");
 
               channels.Add(channelLabel, channel);
-              Log.Log("����� ���������������: ����=" + comName + ", ��������=" + baudRate +
-                      ", � ������� ����� ������ �������� ���: " + channelLabel);
             }
             catch (Exception ex) {
-              Log.Log("�� ������� ���������������� ���������������� ����� �����");
-              Log.Log(ex.ToString());
+              Log.Log("Error during loading information fomr XML config for single COM channel: " + ex);
             }
           }
         }
       }
-      Log.Log("������ ���������, ���������� ������� = " + channels.Count);
+      Log.Log("Creating BUMIZ IO channels from config is complete, final channels count is: " + channels.Count);
       return channels;
     }
 
@@ -70,7 +68,7 @@ namespace BumizIoManager {
       //_scadaObjects = new Dictionary<string, IScadaObjectInfo>();
 
       //TODO: make static factory for each iface type
-      Log.Log("������������� �������� ����� �������� XML ������������...");
+      Log.Log("Loading BUMIZ objects configurations from XML file " + filename + "...");
       var docChannels = XDocument.Load(filename);
       {
         var rootNode = docChannels.Element("Objects");
@@ -95,26 +93,26 @@ namespace BumizIoManager {
                   addressType = NetIdRetrieveType.OldProtocolSerialNumber;
                   break;
                 default:
-                  throw new Exception("�� �������������� ��� ���������");
+                  throw new Exception("Not supported addressing type: " + addressTypeStr);
               }
 
               var addressValue = int.Parse(adrNode.Attribute("Value").Value);
               var timeout = int.Parse(adrNode.Attribute("Timeout").Value);
 
-              var objectInfo = new BumizObjectInfo(objectName, channelName,
-                new ObjectAddress(addressType, (ushort) addressValue), timeout);
+              var objectInfo = new BumizObjectInfo(objectName, channelName
+                , new ObjectAddress(addressType, (ushort) addressValue), timeout);
               objects.Add(objectName, objectInfo);
-              Log.Log("������ ����� ��������: " + objectName + "@" + channelName + ":[" + objectInfo.Address + "]" +
-                      ", �������=" + timeout);
+              Log.Log("Loaded config for single BUMIZ object with name: " + objectName +
+                      " on BUMIZ channel with name: " + channelName + " with address: " + objectInfo.Address +
+                      ", with own timeout = " + timeout + " second(s)");
             }
             catch (Exception ex) {
-              Log.Log("�� ������� ��������� ������ ����� �� XML");
-              Log.Log(ex.ToString());
+              Log.Log("There was error during loading configuration for single BUMIZ object using XML: " + ex);
             }
           }
         }
       }
-      Log.Log("������� ����� ����������������, ���������� �������� = " + objects.Count);
+      Log.Log("BUMIZ objects configs were loaded, resulting objects count is: " + objects.Count);
       return objects;
     }
   }
