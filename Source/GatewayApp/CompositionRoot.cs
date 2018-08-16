@@ -19,7 +19,7 @@ namespace GatewayApp {
       new RelayLogger(Env.GlobalLog,
         new ChainedFormatter(new ITextFormatter[]
           {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkRed, Console.BackgroundColor),
+      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Red, Console.BackgroundColor),
         new ChainedFormatter(new ITextFormatter[]
           {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
