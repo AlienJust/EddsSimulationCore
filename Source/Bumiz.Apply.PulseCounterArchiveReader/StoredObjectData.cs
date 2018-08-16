@@ -10,7 +10,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
     }
 
     /// <summary>
-    /// ���������� ������, ���� ������ ���� ��������� � ����, ���� ������ ��� ���� � ������� 
+    /// Adds record to storage
     /// </summary>
     /// <param name="time"></param>
     /// <param name="data"></param>
@@ -25,17 +25,16 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
 
     public IIntegralData GetIntegralData(DateTime upToTime) {
       if (upToTime < SetupTime)
-        throw new Exception("������, ����� ������� ������ (" + upToTime.ToString("yyyy.MM.dd-HH:mm") +
-                            ") ������ ������� ���������� ������� �� ���� (" + SetupTime.ToString("yyyy.MM.dd-HH:mm") +
+        throw new Exception("Setup (setup time = " + SetupTime.ToString("yyyy.MM.dd-HH:mm") +
+                            ") time is bigger than upToTime (upToTime = " + upToTime.ToString("yyyy.MM.dd-HH:mm") +
                             ")");
       var upToTimeRecords = _storageObjectInfo.FileRecords.Where(kvp => kvp.Key <= upToTime && kvp.Key >= SetupTime)
         .Select(kvp => kvp.Value).ToList();
       var recordsCount = upToTimeRecords.Count;
       var supposedRecordsCount = (int) ((upToTime - SetupTime).TotalMinutes / 30.0) + 1;
       if (recordsCount != supposedRecordsCount)
-        throw new Exception("���������� �������� ���������� ��������� ������, �.�. ����� ����������� � ��������� (" +
-                            recordsCount + ")�� ����� ��������������� ����� ����������� (" + supposedRecordsCount +
-                            ")");
+        throw new Exception("records count (recordsCount=" + recordsCount + ") is differ from supposed count (supposed " + supposedRecordsCount +
+                            " record(s))");
 
       var correctRecordsCount = upToTimeRecords.Count(r => r.IsRecordCorrect);
       var incorrectRecordsCount = recordsCount - correctRecordsCount;
@@ -44,8 +43,8 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
       var impulsesCount2 = upToTimeRecords.Sum(r => r.PulseCount2);
       var impulsesCount3 = upToTimeRecords.Sum(r => r.PulseCount3);
 
-      return new IntegralData(impulsesCount1, impulsesCount2, impulsesCount3, recordsCount, correctRecordsCount,
-        incorrectRecordsCount, supposedRecordsCount);
+      return new IntegralData(impulsesCount1, impulsesCount2, impulsesCount3, recordsCount, correctRecordsCount
+        , incorrectRecordsCount, supposedRecordsCount);
     }
 
     public DateTime SetupTime => _storageObjectInfo.SetupTime;

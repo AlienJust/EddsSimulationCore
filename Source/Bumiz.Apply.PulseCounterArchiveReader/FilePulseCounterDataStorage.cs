@@ -27,7 +27,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
       _archivePath = Path.Combine(typeof(FilePulseCounterDataStorage).GetAssemblyDirectoryPath(),
         "PulseCountersStorage");
 
-      Log.Log("���� � ������ �����������: " + _archivePath);
+      Log.Log("Bumiz.PulseCountersStorage _archivePath is: " + _archivePath);
       _infos = infos.ToList();
       _namedRecs = new Dictionary<string, IObjectData>();
 
@@ -82,7 +82,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
                           StatusX = statusX
                         });
                       if (!isRecoredAdded) {
-                        Log.Log("����������� �� ���� ��������� �� ���������!");
+                        Log.Log("Record was not added after IObjectData.AddRecord() method call!");
                       }
                     }
                   }
@@ -92,7 +92,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
           else Log.Log("File with archive not exist, it will be created during next data saving: " + objFileName);
         }
         catch (Exception ex) {
-          Log.Log("�� ������� �������� ������ �� ����� " + objFileName);
+          Log.Log("Error while filling recs from file " + objFileName);
           Log.Log(ex.ToString());
         }
       }
@@ -101,7 +101,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
     public IIntegralData GetIntegralData(string objectName, DateTime upToTime) {
       if (_namedRecs.ContainsKey(objectName))
         return _namedRecs[objectName].GetIntegralData(upToTime);
-      throw new Exception("�� ������� ����� ������ ��� �������" + objectName);
+      throw new Exception("Error getting integral data for object with name: " + objectName + ", no such key (name) was found");
     }
 
     public List<DateTime> GetMissedTimesUpToTime(string objectName, DateTime nowTime) {
@@ -111,7 +111,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
       var curTime = objInfo.SetupTime.AddMinutes(-1.0 * (objInfo.SetupTime.Minute < 30
                                                    ? objInfo.SetupTime.Minute
                                                    : objInfo.SetupTime.Minute -
-                                                     30)); // ����� ���������� �� ��������� ���������� �����������
+                                                     30));
       while (curTime < nowTime) {
         if (!objInfo.ContatinsDataForTime(curTime)) {
           result.Add(curTime);
@@ -170,7 +170,7 @@ namespace Bumiz.Apply.PulseCounterArchiveReader {
         }
       }
       else {
-        Log.Log("�������, ������ �� ��� ����� ��� ���� � ������");
+        Log.Log("Record was not added to storage while trying to save data, but it's may be okay");
       }
     }
 
