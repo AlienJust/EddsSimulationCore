@@ -4,6 +4,7 @@ using System.Composition;
 using System.Composition.Hosting;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Loader;
 using AJ.Std.Composition.Contracts;
 using AJ.Std.Loggers;
@@ -15,16 +16,17 @@ using Audience;
 
 namespace GatewayApp {
   class CompositionRoot : ICompositionRoot {
-    private static readonly ILogger Log = new RelayMultiLogger(true,
-      new RelayLogger(Env.GlobalLog,
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})),
-      new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Red, Console.BackgroundColor),
-        new ChainedFormatter(new ITextFormatter[]
-          {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+    private static readonly ILogger Log = new RelayMultiLogger(true
+      , new RelayLogger(Env.GlobalLog
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        }))
+      , new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Red, Console.BackgroundColor)
+        , new ChainedFormatter(new ITextFormatter[] {
+          new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")
+        })));
 
-    [ImportMany]
-    private IEnumerable<ICompositionPart> _compositionParts { get; set; }
+    [ImportMany] private IEnumerable<ICompositionPart> _compositionParts { get; set; }
 
     public CompositionRoot() {
       Log.Log("CompositionRoot constructor called");
@@ -34,23 +36,37 @@ namespace GatewayApp {
         return AssemblyLoadContext.Default.LoadFromAssemblyPath(p);
       }).Where(x => x != null).ToList();
 
-      Log.Log("Assemblies count = " + assemblies.Count);
-      foreach (var assembly in assemblies) {
-        Log.Log(assembly.FullName);
-      }
 
-      var configuration = new ContainerConfiguration().WithAssemblies(assemblies);
+/*var goodAssemblises = new List<Assembly>();
+
+Log.Log("Assemblies count = " + assemblies.Count);
+
+foreach (var assembly in assemblies) {
+  try {
+    Log.Log(assembly.FullName);
+    goodAssemblises.Add(assembly);
+  }
+  catch (Exception e) {
+    Console.WriteLine(e);
+    //continue;
+  }
+    }*/
+
+      //var configuration = new ContainerConfiguration().WithAssemblies(goodAssemblises);
+      //var configuration = new ContainerConfiguration().WithAssemblies(assemblies);
+      var configuration = new ContainerConfiguration().WithPart(typeof(ICompositionPart));
       using (var container = configuration.CreateContainer()) {
         _compositionParts = container.GetExports<ICompositionPart>();
       }
 
 
-      //_compositionParts = exportedTypes.ToList();
+//_compositionParts = exportedTypes.ToList();
 
       try {
         foreach (var compositionPart in _compositionParts) {
           try {
-            Log.Log("Инициализация композиционной части " + compositionPart.Name + " (" + compositionPart.GetType().FullName+ ")");
+            Log.Log("Инициализация композиционной части " + compositionPart.Name + " (" +
+                    compositionPart.GetType().FullName + ")");
             compositionPart.SetCompositionRoot(this);
           }
           catch (Exception ex) {

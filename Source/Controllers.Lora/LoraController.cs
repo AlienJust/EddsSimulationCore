@@ -4,8 +4,10 @@ using System.Linq;
 using System.Text;
 using AJ.Std.Text;
 using Controllers.Contracts;
+using Controllers.Lora.JsonBrocaar;
 using nMqtt;
 using nMqtt.Messages;
+using Newtonsoft.Json;
 
 namespace Controllers.Lora {
   internal sealed class LoraController : IController {
@@ -15,7 +17,7 @@ namespace Controllers.Lora {
 
     private DateTime _lastCurrentDataRequestTime;
     private readonly TimeSpan _cacheInvalidationTime;
-    
+
     private IReadOnlyList<byte> _lastCurrentDataResult;
 
     public string Name { get; }
@@ -23,10 +25,10 @@ namespace Controllers.Lora {
 
     public LoraController(string name, string mqttTxTopicName, Action<string> logAction, MqttClient client) {
       Name = name;
-      _mqttTxTopicName = mqttTxTopicName;
+      _mqttTxTopicName = mqttTxTopicName; // TODO: publish commands to that topic
       _logAction = logAction;
       _client = client;
-      
+
       _lastCurrentDataRequestTime = DateTime.MinValue;
       _lastCurrentDataResult = new byte[0];
       _cacheInvalidationTime = TimeSpan.FromMinutes(5);
@@ -36,13 +38,17 @@ namespace Controllers.Lora {
       //_client.Publish(_mqttTxTopicName, Encoding.UTF8.GetBytes("123_salem"), Qos.AtLeastOnce);
     }
 
-    public void OnMessageReceived(PublishMessage msg) {
-      NamedLog("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
+    public void WhenPublishMessageReceived(byte[] payload) {
       try {
         // TODO: TO KNOW, WHAT THREAD THIS METHOD CALLED
         // Need to decode string like: //{"applicationID":"1","applicationName":"mgf_vega_nucleo_debug_app","deviceName":"mgf","devEUI":"be7a0000000000c8","deviceStatusBattery":254,"deviceStatusMargin":26,"rxInfo":[{"mac":"0000e8eb11417531","time":"2018-07-05T10:20:46.12777Z","rssi":-46,"loRaSNR":7.2,"name":"vega-gate","latitude":55.95764,"longitude":60.57098,"altitude":317}],"txInfo":{"frequency":868500000,"dataRate":{"modulation":"LORA","bandwidth":125,"spreadFactor":7},"adr":true,"codeRate":"4/5"},"fCnt":2502,"fPort":2,"data":"/////w=="}
-        var rawJson = Encoding.UTF8.GetString(msg.Payload);
+        var rawJson = Encoding.UTF8.GetString(payload);
         NamedLog("Parsed RX >>> " + rawJson);
+       
+        var parsedJson = JsonConvert.DeserializeObject<MqttBrocaarMessage>(rawJson);
+        Console.WriteLine("Parsed fPort = " + parsedJson.Fport);
+        Console.WriteLine("Parsed fCnt = " + parsedJson.Fcnt);
+
         var lastData = rawJson.Split(",\"data\":").Last();
         lastData = lastData.Substring(1, lastData.Length - 3);
         NamedLog("Parsed RX LAST : >>> " + lastData);
@@ -50,8 +56,9 @@ namespace Controllers.Lora {
         NamedLog("Decoded bytes are: " + decodedBytes.ToText());
 
         _lastCurrentDataResult = decodedBytes; // copy data
-        //_lastCurrentDataResult = BitConverter.GetBytes((float)1.23);
         
+        //_lastCurrentDataResult = BitConverter.GetBytes((float)1.23);
+
         _lastCurrentDataRequestTime = DateTime.Now; // remember time
         NamedLog("Float RX DATA >>>" + BitConverter.ToSingle(decodedBytes));
       }
@@ -61,14 +68,12 @@ namespace Controllers.Lora {
       }
     }
 
-    public void GetDataInCallback(int command, IReadOnlyList<byte> data,
-      Action<Exception, IReadOnlyList<byte>> callback) {
+    public void GetDataInCallback(int command, IReadOnlyList<byte> data
+      , Action<Exception, IReadOnlyList<byte>> callback) {
       if (command == 6) {
         var result = data.ToList();
         if (result[3] == 0) {
           NamedLog("SCADA requested accepted, command code is 6, data type - current");
-
-          
           if (DateTime.Now - _lastCurrentDataRequestTime < _cacheInvalidationTime) {
             NamedLog("Data was taken from cache, send it back to SCADA");
             result.AddRange(_lastCurrentDataResult);
@@ -81,7 +86,8 @@ namespace Controllers.Lora {
           //NamedLog("Отправка запроса в менеджер обмена по сети БУМИЗ");
         }
         else if (result[3] == 0x06 || result[3] == 0x07) {
-          NamedLog("SCADA requested accepted, command code is 6, data type - half an hour, but no telemetry signals to send");
+          NamedLog(
+            "SCADA requested accepted, command code is 6, data type - half an hour, but no telemetry signals to send");
           callback(null, result);
         }
         //NamedLog("Запрос получасовых данных для " + _bumizControllerInfo.Name);
@@ -109,3 +115,4 @@ namespace Controllers.Lora {
     }
   }
 }
+

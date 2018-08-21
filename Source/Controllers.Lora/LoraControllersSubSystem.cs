@@ -100,12 +100,18 @@ namespace Controllers.Lora {
                 foreach (var loraControllerInfo in _loraControllerInfos) {
                   var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
                   var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
-                  _loraControllersByRxTopicName.Add(rxTopicName
-                    , new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient));
+
+                  var loraController = new LoraController(loraControllerInfo.Name, txTopicName, Log.Log, _mqttClient);
+                  _loraControllersByRxTopicName.Add(rxTopicName, loraController);
                   Log.Log("Subscribing for topic: " + rxTopicName);
                   Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
                   _mqttClient.Subscribe(rxTopicName, Qos.AtLeastOnce);
                   //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
+                  
+                  // DEBUG:
+                  loraController.WhenPublishMessageReceived(Encoding.UTF8.GetBytes(
+                    "{\"applicationID\":\"1\",\"applicationName\":\"mgf_vega_nucleo_debug_app\",\"deviceName\":\"mgf\",\"devEUI\":\"be7a0000000000c8\",\"deviceStatusBattery\":254,\"deviceStatusMargin\":26,\"rxInfo\":[{\"mac\":\"0000e8eb11417531\",\"time\":\"2018-07-05T10:20:46.12777Z\",\"rssi\":-46,\"loRaSNR\":7.2,\"name\":\"vega-gate\",\"latitude\":55.95764,\"longitude\":60.57098,\"altitude\":317}],\"txInfo\":{\"frequency\":868500000,\"dataRate\":{\"modulation\":\"LORA\",\"bandwidth\":125,\"spreadFactor\":7},\"adr\":true,\"codeRate\":\"4/5\"},\"fCnt\":2502,\"fPort\":2,\"data\":\"/////w==\"}"));
+                  
                   _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
                   Log.Log("Subscribed for topic" + rxTopicName + " OK");
                 }
@@ -133,7 +139,8 @@ namespace Controllers.Lora {
           Console.WriteLine("---- OnMessageReceived");
           Console.WriteLine(@"topic:{0} data:{1}", msg.TopicName, Encoding.UTF8.GetString(msg.Payload));
           if (_loraControllersByRxTopicName.ContainsKey(msg.TopicName)) {
-            _loraControllersByRxTopicName[msg.TopicName].OnMessageReceived(msg);
+            Log.Log("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
+            _loraControllersByRxTopicName[msg.TopicName].WhenPublishMessageReceived(msg.Payload);
           }
           break;
 
