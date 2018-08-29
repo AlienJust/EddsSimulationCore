@@ -13,6 +13,7 @@ namespace Controllers.Lora {
   internal sealed class LoraController : IController {
     private readonly string _mqttTxTopicName;
     private readonly Action<string> _logAction;
+    private readonly Action<byte> _sendDataToMqttAction;
     private readonly MqttClient _client;
 
     private DateTime _lastCurrentDataRequestTime;
@@ -23,11 +24,11 @@ namespace Controllers.Lora {
     public string Name { get; }
 
 
-    public LoraController(string name, string mqttTxTopicName, Action<string> logAction, MqttClient client) {
+    public LoraController(string name, string mqttTxTopicName, Action<string> logAction, Action<byte> sendDataToMqttAction) {
       Name = name;
       _mqttTxTopicName = mqttTxTopicName; // TODO: publish commands to that topic
       _logAction = logAction;
-      _client = client;
+      _sendDataToMqttAction = sendDataToMqttAction;
 
       _lastCurrentDataRequestTime = DateTime.MinValue;
       _lastCurrentDataResult = new byte[0];

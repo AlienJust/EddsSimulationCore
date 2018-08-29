@@ -70,8 +70,16 @@ namespace Controllers.Lora {
       _initComplete = new ManualResetEvent(false);
       _initException = null;
 
-      _loraControllerInfos = XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
+      _loraControllerInfos =
+        XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
       _loraControllersByRxTopicName = new Dictionary<string, LoraController>();
+
+      foreach (var loraControllerInfo in _loraControllerInfos) {
+        var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
+        var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
+
+        var loraController = new LoraController(loraControllerInfo.Name, txTopicName, Log.Log);
+      }
 
       _mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};
 
@@ -96,7 +104,7 @@ namespace Controllers.Lora {
               if (msg.ConnectReturnCode == ConnectReturnCode.ConnectionAccepted) {
                 Log.Log("MQTT connected OK");
 
-                _loraControllersByRxTopicName.Clear();
+                _loraControllersByRxTopicName.Clear(); // recreate controllers on each connect?
                 foreach (var loraControllerInfo in _loraControllerInfos) {
                   var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
                   var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
@@ -107,11 +115,11 @@ namespace Controllers.Lora {
                   Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
                   _mqttClient.Subscribe(rxTopicName, Qos.AtLeastOnce);
                   //_prevSubscribeIsComplete.WaitOne(TimeSpan.FromSeconds(5)); // something wrong if cannot get SubAck
-                  
+
                   // DEBUG:
                   loraController.WhenPublishMessageReceived(Encoding.UTF8.GetBytes(
                     "{\"applicationID\":\"1\",\"applicationName\":\"mgf_vega_nucleo_debug_app\",\"deviceName\":\"mgf\",\"devEUI\":\"be7a0000000000c8\",\"deviceStatusBattery\":254,\"deviceStatusMargin\":26,\"rxInfo\":[{\"mac\":\"0000e8eb11417531\",\"time\":\"2018-07-05T10:20:46.12777Z\",\"rssi\":-46,\"loRaSNR\":7.2,\"name\":\"vega-gate\",\"latitude\":55.95764,\"longitude\":60.57098,\"altitude\":317}],\"txInfo\":{\"frequency\":868500000,\"dataRate\":{\"modulation\":\"LORA\",\"bandwidth\":125,\"spreadFactor\":7},\"adr\":true,\"codeRate\":\"4/5\"},\"fCnt\":2502,\"fPort\":2,\"data\":\"/////w==\"}"));
-                  
+
                   _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(1.0));
                   Log.Log("Subscribed for topic" + rxTopicName + " OK");
                 }
@@ -142,6 +150,7 @@ namespace Controllers.Lora {
             Log.Log("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
             _loraControllersByRxTopicName[msg.TopicName].WhenPublishMessageReceived(msg.Payload);
           }
+
           break;
 
         default:
