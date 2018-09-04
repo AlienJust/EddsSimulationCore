@@ -49,6 +49,9 @@
     <Reference Include="AJ.Std.Text.Contracts">
       <HintPath>..\References\AJ.Std.Text.Contracts.dll</HintPath>
     </Reference>
+    <Reference Include="PollSystem.CommandManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\References\PollSystem.CommandManagement.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Update="cfg\LoraControllerInfos.xml">

@@ -8,34 +8,48 @@ using Audience;
 using GatewayAttachedControllers;
 
 namespace Controllers.Gateway.Attached {
-  [Export(typeof(ICompositionPart))]
-  class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
-    public AttachedControllersInfoSystem() {
-      AttachedControllerInfos =
-        XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));
-    }
+	[Export(typeof(ICompositionPart))]
+	internal class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
+		public AttachedControllersInfoSystem() {
+			AttachedControllerInfos = XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));
 
-    private IReadOnlyDictionary<AttachedObjectConfig, string> AttachedControllerInfos { get; }
+			AttachedControllerConfigs = new Dictionary<string, AttachedObjectConfig>();
+			foreach (var attachedControllerInfo in AttachedControllerInfos) {
+				AttachedControllerConfigs.Add(attachedControllerInfo.Value, attachedControllerInfo.Key);
+			}
+		}
+
+		private IReadOnlyDictionary<AttachedObjectConfig, string> AttachedControllerInfos { get; }
+		private Dictionary<string, AttachedObjectConfig> AttachedControllerConfigs { get; }
 
 
-    public override void SetCompositionRoot(ICompositionRoot root) {
-      // Get all needed c.parts with adding refs to them
-    }
+		public override void SetCompositionRoot(ICompositionRoot root) {
+			// Get all needed c.parts with adding refs to them
+		}
 
-    public override string Name => "GatewayAttachedControllers";
+		public override string Name => "GatewayAttachedControllers";
 
-    public override void BecameUnused() {
-      // Unload all c.parts here
-    }
+		public override void BecameUnused() {
+			// Unload all c.parts here
+		}
 
-    public string GetAttachedControllerNameByConfig(string gateway, int channel, int type, int number) {
-      var key = new AttachedObjectConfig(gateway, channel, type, number);
-      if (!AttachedControllerInfos.ContainsKey(key)) {
-        throw new AttachedControllerNotFoundException();
-      }
-      return AttachedControllerInfos[key];
-    }
-  }
+		public string GetAttachedControllerNameByConfig(string gateway, int channel, int type, int number) {
+			var key = new AttachedObjectConfig(gateway, channel, type, number);
+			if (!AttachedControllerInfos.ContainsKey(key)) {
+				throw new AttachedControllerNotFoundException();
+			}
 
-  public class AttachedControllerNotFoundException : Exception { }
+			return AttachedControllerInfos[key];
+		}
+
+		public AttachedObjectConfig GetAttachedControllerConfigByName(string attachedControllerName) {
+			if (!AttachedControllerConfigs.ContainsKey(attachedControllerName)) {
+				throw new AttachedControllerNotFoundException();
+			}
+
+			return AttachedControllerConfigs[attachedControllerName];
+		}
+	}
+
+	public class AttachedControllerNotFoundException : Exception { }
 }

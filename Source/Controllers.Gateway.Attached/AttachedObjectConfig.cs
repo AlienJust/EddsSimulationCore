@@ -1,15 +1,15 @@
 namespace Controllers.Gateway.Attached {
-  struct AttachedObjectConfig {
+  public struct AttachedObjectConfig {
     public AttachedObjectConfig(string gateway, int channel, int type, int number) {
       Gateway = gateway;
       Channel = channel;
       Type = type;
       Number = number;
     }
-    string Gateway { get; }
-    int Channel { get; }
-    int Type { get; }
-    int Number { get; }
+    public string Gateway { get; }
+    public int Channel { get; }
+    public int Type { get; }
+    public int Number { get; }
 
     public override bool Equals(object obj) {
       if (obj is AttachedObjectConfig aoc) {
