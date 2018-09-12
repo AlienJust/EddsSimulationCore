@@ -123,7 +123,6 @@ namespace Controllers.Lora {
 			Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
 		}
 
-
 		private void OnMessageReceived(MqttMessage message) {
 			switch (message) {
 				case ConnAckMessage msg:
