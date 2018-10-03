@@ -68,6 +68,8 @@ namespace Controllers.Lora {
 			_commandManagerDriverSide.CommandRequestAccepted += CommandManagerDriverSideOnCommandRequestAccepted;
 
 			_backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker", a => a(), ThreadPriority.BelowNormal, true, null);
+			Log.Log("Background worker Inited OK");
+			
 			_prevSubscribeIsComplete = new AutoResetEvent(false);
 			_initComplete = new ManualResetEvent(false);
 			_initException = null;
@@ -135,6 +137,7 @@ namespace Controllers.Lora {
 						try {
 							if (msg.ConnectReturnCode == ConnectReturnCode.ConnectionAccepted) {
 								Log.Log("MQTT connected OK");
+								if (_loraControllers == null) Log.Log("_loraControllers is null!!!");
 								foreach (var loraControllerInfo in _loraControllers) {
 									Log.Log("Subscribing for topic: " + loraControllerInfo.RxTopicName);
 									Log.Log("Waiting for SubscribeAckMessage from MQTT broker...");
@@ -153,6 +156,7 @@ namespace Controllers.Lora {
 							}
 						}
 						catch (Exception exception) {
+							Log.Log("Exception during _backWorker.AddWork(() => { called on conAck.. }: " + exception);
 							_initException = new Exception("Cannot init MQTT", exception);
 						}
 						finally {
