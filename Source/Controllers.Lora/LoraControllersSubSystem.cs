@@ -21,10 +21,11 @@ using nMqtt.Messages;
 using Newtonsoft.Json;
 using PollServiceProxy.Contracts;
 using PollSystem.CommandManagement.Channels;
+using PollSystem.CommandManagement.Channels.Exceptions;
 
 namespace Controllers.Lora {
 	public class LoraControllersSubSystem : CompositionPartBase, ISubSystem {
-		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Yellow), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
+		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Yellow), new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
 
 		private ICompositionPart _scadaPollGatewayPart;
@@ -85,9 +86,7 @@ namespace Controllers.Lora {
 			_scadaPollGatewayPart.AddRef();
 			_scadaPollGateway.RegisterSubSystem(this);
 
-			
-			
-			
+
 			var commandManager = new InteleconCommandManager<string>();
 			_commandManagerDriverSide = commandManager;
 			_commandManagerSystemSide = commandManager;
@@ -96,7 +95,7 @@ namespace Controllers.Lora {
 
 			_backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker", a => a(), ThreadPriority.BelowNormal, true, null);
 			Log.Log("Background worker Inited OK");
-			
+
 			_prevSubscribeIsComplete = new AutoResetEvent(false);
 			_initComplete = new ManualResetEvent(false);
 			_initException = null;
@@ -115,19 +114,19 @@ namespace Controllers.Lora {
 				_loraControllers.Add(new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig));
 			}
 
-			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) { Port = _mqttBrokerPort };
+			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};
 
 			_mqttClient.SomeMessageReceived += OnMessageReceived;
 			_mqttClient.ConnectAsync();
-			
+
 
 			Log.Log("Waits until all RX topics would be subscribed...");
 			_initComplete.WaitOne();
 			if (_initException != null)
 				throw _initException;
 			Log.Log(".ctor complete");
-			
-			
+
+
 			Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
 		}
 
@@ -198,7 +197,7 @@ namespace Controllers.Lora {
 
 						// TODO: check if decoded bytes are inteleconCommand
 						if (receivedData.Length >= 8) {
-							var netAddr = (ushort)(receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address :)
+							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address :)
 							var cmdCode = receivedData[2];
 							var rcvData = new byte[receivedData.Length - 8];
 							for (int i = 0; i < rcvData.Length; ++i) {
@@ -246,15 +245,14 @@ namespace Controllers.Lora {
 						_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 				}
 			}
-			catch (Exception e) {
-				Console.WriteLine(e);
-				throw;
+			catch (NeedGiveCommandBackException) {
+				Log.Log("[ER] Need to wait for command from driver before adding new one command!");
 			}
 		}
 
 
 		private static byte[] PackInteleconCommand(IInteleconCommand cmd, int inteleconNetworkAddress) {
-			return cmd.Data.ToArray().GetNetBuffer((ushort)inteleconNetworkAddress, (byte)cmd.Code);
+			return cmd.Data.ToArray().GetNetBuffer((ushort) inteleconNetworkAddress, (byte) cmd.Code);
 		}
 
 
@@ -287,20 +285,21 @@ namespace Controllers.Lora {
 					var channel = data[0];
 					var type = data[1];
 					var number = data[2];
-					Log.Log("Command code and data length are correct, att_channel=" + channel + ", att_type=" + type + ", att_number=" + number);
+					Log.Log("[OK] Command code and data length are correct, att_channel=" + channel + ", att_type=" + type + ", att_number=" + number);
 
 					if (type != 50) {
-						Log.Log("Att_type != 50, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
+						Log.Log("[ER] Att_type != 50, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
 						return;
 					}
 
 					foreach (var loraControllerFullInfo in _loraControllers) {
 						if (loraControllerFullInfo.AttachedControllerConfig.Gateway == subObjectName && channel == loraControllerFullInfo.AttachedControllerConfig.Channel && type == loraControllerFullInfo.AttachedControllerConfig.Type && number == loraControllerFullInfo.AttachedControllerConfig.Number) {
 							isLoraControllerFound = true;
+							Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
 							var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
 							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(30), (exc, reply) => {
 								try {
-									sendReplyAction((byte)reply.Code, reply.Data);
+									sendReplyAction((byte) reply.Code, reply.Data);
 								}
 								catch (Exception e) {
 									Log.Log("При обработке ответа от объекта LORA возникло исключение: " + e);
@@ -309,8 +308,10 @@ namespace Controllers.Lora {
 									notifyOperationComplete(); // выполняется в другом потоке
 								}
 							});
-							break;
+							Log.Log("[OK] Command was pushed to command manager");
 						}
+						else Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
+						break;
 					}
 				}
 			}
