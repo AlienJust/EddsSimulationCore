@@ -26,7 +26,7 @@ using PollSystem.CommandManagement.Channels;
 namespace Controllers.Lora {
 	[Export(typeof(ICompositionPart))]
 	public class LoraControllersSubSystem : CompositionPartBase, ISubSystem {
-		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Yellow), new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Yellow), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
 
 
 		private ICompositionPart _scadaPollGatewayPart;
@@ -74,7 +74,7 @@ namespace Controllers.Lora {
 
 			_loraControllerInfos = XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
 
-			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};
+			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) { Port = _mqttBrokerPort };
 
 			_mqttClient.SomeMessageReceived += OnMessageReceived;
 			_mqttClient.ConnectAsync();
@@ -84,7 +84,8 @@ namespace Controllers.Lora {
 
 			Log.Log("Waits until all RX topics would be subscribed...");
 			_initComplete.WaitOne();
-			if (_initException != null) throw _initException;
+			if (_initException != null)
+				throw _initException;
 			Log.Log(".ctor complete");
 		}
 
@@ -106,7 +107,8 @@ namespace Controllers.Lora {
 
 			_scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
 			_scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-			if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+			if (_scadaPollGateway == null)
+				throw new Exception("Не удалось найти PollGateWay через composition root");
 			_scadaPollGatewayPart.AddRef();
 			_scadaPollGateway.RegisterSubSystem(this);
 
@@ -168,7 +170,7 @@ namespace Controllers.Lora {
 
 					try {
 						LoraControllerFullInfo info = FindLoraControllerInfoByRxTopic(msg.TopicName);
-						
+
 						Log.Log("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
 						// TODO: reply to scada
 
@@ -188,7 +190,7 @@ namespace Controllers.Lora {
 
 						// TODO: check if decoded bytes are inteleconCommand
 						if (receivedData.Length >= 8) {
-							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address :)
+							var netAddr = (ushort)(receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address :)
 							var cmdCode = receivedData[2];
 							var rcvData = new byte[receivedData.Length - 8];
 							for (int i = 0; i < rcvData.Length; ++i) {
@@ -231,7 +233,8 @@ namespace Controllers.Lora {
 							// TODO: log
 						}
 					}
-					else _commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+					else
+						_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 				}
 			}
 			catch (Exception e) {
@@ -240,12 +243,12 @@ namespace Controllers.Lora {
 			}
 		}
 
-		
+
 		private static byte[] PackInteleconCommand(IInteleconCommand cmd, int inteleconNetworkAddress) {
-			return cmd.Data.ToArray().GetNetBuffer((ushort) inteleconNetworkAddress, (byte) cmd.Code);
+			return cmd.Data.ToArray().GetNetBuffer((ushort)inteleconNetworkAddress, (byte)cmd.Code);
 		}
 
-		
+
 		private LoraControllerFullInfo FindControllerByAttachedInfo(byte type, byte channel, byte number) {
 			foreach (var loraControllerFullInfo in _loraControllers) {
 				if (loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number)
@@ -254,8 +257,8 @@ namespace Controllers.Lora {
 
 			throw new AttachedControllerNotFoundException();
 		}
-		
-		
+
+
 		private LoraControllerFullInfo FindLoraControllerInfoByRxTopic(string msgTopicName) {
 			foreach (var loraControllerFullInfo in _loraControllers) {
 				if (loraControllerFullInfo.RxTopicName == msgTopicName)
@@ -288,7 +291,7 @@ namespace Controllers.Lora {
 							var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
 							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(30), (exc, reply) => {
 								try {
-									sendReplyAction((byte) reply.Code, reply.Data);
+									sendReplyAction((byte)reply.Code, reply.Data);
 								}
 								catch (Exception e) {
 									Log.Log("При обработке ответа от объекта LORA возникло исключение: " + e);
