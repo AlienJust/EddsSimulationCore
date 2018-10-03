@@ -11,11 +11,11 @@
 			<UdpScadaLink Label="LocalScada" Address="2000"/>
 		</Targets>
 	</Object>
-  <Object Name="gate2001" SendMicroPackets="True">
-    <Targets>
-      <UdpScadaLink Label="AjHomeScada" Address="2001"/>
-    </Targets>
-  </Object>
+	<Object Name="gate2001" SendMicroPackets="True">
+		<Targets>
+			<UdpScadaLink Label="AjHomeScada" Address="2001"/>
+		</Targets>
+	</Object>
 	<Object Name="gate222" SendMicroPackets="True">
 		<Targets>
 			<UdpScadaLink Label="AjHomeScada" Address="2"/>

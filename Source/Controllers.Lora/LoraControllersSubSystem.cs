@@ -177,7 +177,7 @@ namespace Controllers.Lora {
 					Console.WriteLine(@"topic:{0} data:{1}", msg.TopicName, Encoding.UTF8.GetString(msg.Payload));
 
 					try {
-						LoraControllerFullInfo info = FindLoraControllerInfoByRxTopic(msg.TopicName);
+						var info = FindLoraControllerInfoByRxTopic(msg.TopicName);
 
 						Log.Log("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
 						// TODO: reply to scada
@@ -208,6 +208,7 @@ namespace Controllers.Lora {
 							Log.Log("Invoked data received event");
 							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(info.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
 						}
+						else Log.Log("Data bytes count too low, it cannot be Intelecon command");
 					}
 					catch (AttachedControllerNotFoundException) {
 						Log.Log("Attached LORA controller not found by MQTT topic: " + msg.TopicName);
