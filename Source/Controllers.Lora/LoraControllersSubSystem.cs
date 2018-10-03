@@ -130,7 +130,7 @@ namespace Controllers.Lora {
 		private void OnMessageReceived(MqttMessage message) {
 			switch (message) {
 				case ConnAckMessage msg:
-					Console.WriteLine("---- OnConnAck");
+					Log.Log("---- OnConnAck");
 					_backWorker.AddWork(() => {
 						try {
 							if (msg.ConnectReturnCode == ConnectReturnCode.ConnectionAccepted) {
@@ -162,12 +162,12 @@ namespace Controllers.Lora {
 					break;
 
 				case SubscribeAckMessage msg:
-					Console.WriteLine("---- OnSubAck");
+					Log.Log("---- OnSubAck");
 					_prevSubscribeIsComplete.Set();
 					break;
 
 				case PublishMessage msg:
-					Console.WriteLine("---- OnMessageReceived");
+					Log.Log("---- OnMessageReceived");
 					Console.WriteLine(@"topic:{0} data:{1}", msg.TopicName, Encoding.UTF8.GetString(msg.Payload));
 
 					try {
@@ -180,8 +180,8 @@ namespace Controllers.Lora {
 						Log.Log("Parsed RX >>> " + rawJson);
 
 						var parsedJson = JsonConvert.DeserializeObject<MqttBrocaarMessage>(rawJson);
-						Console.WriteLine("Parsed fPort = " + parsedJson.Fport);
-						Console.WriteLine("Parsed fCnt = " + parsedJson.Fcnt);
+						Log.Log("Parsed fPort = " + parsedJson.Fport);
+						Log.Log("Parsed fCnt = " + parsedJson.Fcnt);
 
 						var lastData = parsedJson.Data;
 						//var lastData = rawJson.Split(",\"data\":").Last();
