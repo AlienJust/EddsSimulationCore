@@ -1,18 +1,18 @@
 ﻿namespace Commands.Contracts {
-  public interface IBinaryCommand {
-    /// <summary>
-    /// Комментарий (например название команды)
-    /// </summary>
-    string Comment { get; }
+	public interface IBinaryCommand {
+		/// <summary>
+		/// Комментарий (например название команды)
+		/// </summary>
+		string Comment { get; }
 
-    /// <summary>
-    /// Сериализует команду в байты
-    /// </summary>
-    /// <returns></returns>
-    byte[] Serialize();
-  }
+		/// <summary>
+		/// Сериализует команду в байты
+		/// </summary>
+		/// <returns></returns>
+		byte[] Serialize();
+	}
 
-  /*
+	/*
   /// <summary>
   /// Команда, длина ответа на которую известна
   /// </summary>
@@ -21,11 +21,11 @@
     int AwaitedBytesCount { get; }
   }*/
 
-  public interface ICounterCommand : IBinaryCommand {
-    ushort Code { get; }
-  }
+	public interface ICounterCommand : IBinaryCommand {
+		ushort Code { get; }
+	}
 
-  public interface IInteleconCommand : IBinaryCommand {
-    byte Code { get; }
-  }
+	public interface IInteleconCommand : IBinaryCommand {
+		byte Code { get; }
+	}
 }

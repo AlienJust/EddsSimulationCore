@@ -10,6 +10,7 @@ using AJ.Std.Reflection;
 using AJ.Std.Text;
 using AJ.Std.Text.Contracts;
 using Audience;
+using McMaster.NETCore.Plugins;
 
 namespace GatewayApp {
 	class CompositionRoot : ICompositionRoot {
@@ -30,10 +31,10 @@ namespace GatewayApp {
 		public CompositionRoot() {
 			Log.Log("CompositionRoot constructor called");
 			_compositionParts = new List<ICompositionPart>();
-			var dllFiles = Directory.GetFiles(typeof(CompositionRoot).GetAssemblyDirectoryPath(), "*.dll").ToList();
+			//var dllFiles = Directory.GetFiles(typeof(CompositionRoot).GetAssemblyDirectoryPath(), "*.dll").ToList();
 
 			//var loaders = new List<PluginLoader>();
-			var assemblies = new List<Assembly>();
+			/*var assemblies = new List<Assembly>();
 
 			foreach (var dllFile in dllFiles) {
 				try {
@@ -44,31 +45,72 @@ namespace GatewayApp {
 				catch (Exception e) {
 					Console.WriteLine(e);
 				}
-			}
+			} */
 
 			/*
-      var configuration = new ContainerConfiguration().WithAssemblies(assemblies);
-      using (var container = configuration.CreateContainer()) {
-        _compositionParts = container.GetExports<ICompositionPart>();
-      }*/
+			var configuration = new ContainerConfiguration().WithAssemblies(assemblies);
+			using (var container = configuration.CreateContainer()) {
+				_compositionParts = container.GetExports<ICompositionPart>();
+			}*/
+			/*
 			foreach (var assembly in assemblies) {
 				var types = assembly.GetTypes().Where(t => typeof(ICompositionPart).IsAssignableFrom(t) && !t.IsAbstract);
 				foreach (var t in types) {
 					var part = (ICompositionPart)Activator.CreateInstance(t);
 					_compositionParts.Add(part);
 				}
-			}
-			/*
-      foreach (var loader in loaders) {
-        foreach (var pluginType in loader.LoadDefaultAssembly().GetTypes()
-          .Where(t => typeof(ICompositionPart).IsAssignableFrom(t) && !t.IsAbstract)) {
-          // This assumes the implementation of IPlugin has a parameterless constructor
-          ICompositionPart plugin = (ICompositionPart) Activator.CreateInstance(pluginType);
+			}*/
 
-          Console.WriteLine($"Created plugin instance '{plugin.Name}'.");
-          _compositionParts.Add(plugin);
-        }
-      }*/
+			/*
+			foreach (var loader in loaders) {
+				foreach (var pluginType in loader.LoadDefaultAssembly().GetTypes()
+					.Where(t => typeof(ICompositionPart).IsAssignableFrom(t) && !t.IsAbstract)) {
+					// This assumes the implementation of IPlugin has a parameterless constructor
+					ICompositionPart plugin = (ICompositionPart) Activator.CreateInstance(pluginType);
+
+					Console.WriteLine($"Created plugin instance '{plugin.Name}'.");
+					_compositionParts.Add(plugin);
+				}
+			}*/
+
+
+			var loaders = new List<PluginLoader>();
+
+			// create plugin loaders
+			var pluginsDir = Path.Combine(AppContext.BaseDirectory);
+			foreach (var file in Directory.GetFiles(pluginsDir, "*.dll")) {
+				//var dirName = Path.GetFileName(dir);
+				try {
+					if (File.Exists(file)) {
+						var loader = PluginLoader.CreateFromAssemblyFile(file, sharedTypes: new[] { typeof(ICompositionPart) });
+						loaders.Add(loader);
+						Console.WriteLine("Created loader from " + file);
+					}
+				}
+				catch (Exception e) {
+					Console.WriteLine(e);
+					continue;
+				}
+			}
+
+			// Create an instance of plugin types
+			foreach (var loader in loaders) {
+				try {
+					foreach (var pluginType in loader
+						.LoadDefaultAssembly()
+						.GetTypes()
+						.Where(t => typeof(ICompositionPart).IsAssignableFrom(t) && !t.IsAbstract)) {
+						// This assumes the implementation of IPlugin has a parameterless constructor
+						dynamic plugin = (ICompositionPart)Activator.CreateInstance(pluginType);
+						_compositionParts.Add(plugin);
+						//Console.WriteLine($"Created plugin instance '{plugin.GetName()}'.");
+					}
+				}
+				catch (Exception e) {
+					Console.WriteLine(e);
+					continue;
+				}
+			}
 
 
 			try {

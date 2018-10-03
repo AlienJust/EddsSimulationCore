@@ -72,6 +72,8 @@ namespace Controllers.Lora {
 			_initComplete = new ManualResetEvent(false);
 			_initException = null;
 
+			dynamic serializer = new JsonSerializer();
+
 			_loraControllerInfos = XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
 
 			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) { Port = _mqttBrokerPort };
