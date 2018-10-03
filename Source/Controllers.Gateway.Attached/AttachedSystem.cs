@@ -7,7 +7,7 @@ using Audience;
 using GatewayAttachedControllers;
 
 namespace Controllers.Gateway.Attached {
-	internal class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
+	public sealed class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
 		public AttachedControllersInfoSystem() {
 			AttachedControllerInfos = XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));
 

@@ -85,15 +85,7 @@ namespace Controllers.Lora {
 			_scadaPollGatewayPart.AddRef();
 			_scadaPollGateway.RegisterSubSystem(this);
 
-			_loraControllers = new List<LoraControllerFullInfo>();
-			// need to create full info about controllers:
-			Log.Log("Creating full information for each lora controller...");
-			foreach (var loraControllerInfo in _loraControllerInfos) {
-				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
-				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
-				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
-				_loraControllers.Add(new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig));
-			}
+			
 			
 			
 			var commandManager = new InteleconCommandManager<string>();
@@ -112,14 +104,22 @@ namespace Controllers.Lora {
 			//dynamic serializer = new JsonSerializer();
 
 			_loraControllerInfos = XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
+			_mqttTopicStart = "application/1/node/";
+			_loraControllers = new List<LoraControllerFullInfo>();
+			// need to create full info about controllers:
+			Log.Log("Creating full information for each lora controller...");
+			foreach (var loraControllerInfo in _loraControllerInfos) {
+				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
+				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
+				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
+				_loraControllers.Add(new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig));
+			}
 
 			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) { Port = _mqttBrokerPort };
 
 			_mqttClient.SomeMessageReceived += OnMessageReceived;
 			_mqttClient.ConnectAsync();
-
-			_mqttTopicStart = "application/1/node/";
-
+			
 
 			Log.Log("Waits until all RX topics would be subscribed...");
 			_initComplete.WaitOne();

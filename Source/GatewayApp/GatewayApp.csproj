@@ -17,6 +17,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Audience\Audience.csproj" />
+    <ProjectReference Include="..\Controllers.AttachedVirtual\Controllers.AttachedVirtual.csproj" />
+    <ProjectReference Include="..\Controllers.Gateway.Attached\Controllers.Gateway.Attached.csproj" />
+    <ProjectReference Include="..\Controllers.Gateway\Controllers.Gateway.csproj" />
+    <ProjectReference Include="..\Controllers.Lora\Controllers.Lora.csproj" />
+    <ProjectReference Include="..\PollServiceProxy\PollServiceProxy.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="AJ.Std.Composition, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
