@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.IO;
 using System.Linq;
 using AJ.Std.Composition;
@@ -14,7 +13,6 @@ using Controllers.Contracts;
 using PollServiceProxy.Contracts;
 
 namespace Controllers.Gateway {
-	[Export(typeof(ICompositionPart))]
 	public class GatewayControllersSubSystem : CompositionPartBase, ISubSystem, IGatewayControllerInfosSystem {
 		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.DarkGreen, Console.BackgroundColor), new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
