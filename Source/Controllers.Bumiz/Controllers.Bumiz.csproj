@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <PackageReference Include="CoreCLR-NCalc" Version="2.2.34" />
-    <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
   </ItemGroup>
 
   <ItemGroup>

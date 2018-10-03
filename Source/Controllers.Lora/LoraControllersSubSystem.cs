@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -24,7 +23,6 @@ using PollServiceProxy.Contracts;
 using PollSystem.CommandManagement.Channels;
 
 namespace Controllers.Lora {
-	[Export(typeof(ICompositionPart))]
 	public class LoraControllersSubSystem : CompositionPartBase, ISubSystem {
 		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Yellow), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
 

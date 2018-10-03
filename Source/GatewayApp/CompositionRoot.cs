@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using AJ.Std.Composition.Contracts;
 using AJ.Std.Loggers;
 using AJ.Std.Loggers.Contracts;
-using AJ.Std.Reflection;
 using AJ.Std.Text;
 using AJ.Std.Text.Contracts;
 using Audience;
@@ -16,7 +14,6 @@ namespace GatewayApp {
 	class CompositionRoot : ICompositionRoot {
 		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Red, Console.BackgroundColor), new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
 
-		//[ImportMany] public IEnumerable<ICompositionPart> _compositionParts { get; set; }
 		private readonly List<ICompositionPart> _compositionParts;
 
 
@@ -116,7 +113,7 @@ namespace GatewayApp {
 					}
 				}
 
-				Log.Log("Загружено композиционных частей: " + _compositionParts.Count());
+				Log.Log("Загружено композиционных частей: " + _compositionParts.Count);
 			}
 			catch (Exception ex) {
 				Log.Log("Загружено композиционных частей: не удалось провести композицию программы. Исключение: " + ex);

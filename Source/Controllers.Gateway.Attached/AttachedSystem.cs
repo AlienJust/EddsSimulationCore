@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.IO;
 using AJ.Std.Composition;
 using AJ.Std.Composition.Contracts;
@@ -8,7 +7,6 @@ using Audience;
 using GatewayAttachedControllers;
 
 namespace Controllers.Gateway.Attached {
-	[Export(typeof(ICompositionPart))]
 	internal class AttachedControllersInfoSystem : CompositionPartBase, IAttachedControllersInfoSystem {
 		public AttachedControllersInfoSystem() {
 			AttachedControllerInfos = XmlFactory.GetCounterCorrectionInfosFromXml(Path.Combine(Env.CfgPath, "AttachedControllerInfos.xml"));

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Linq;
 using AJ.Std.Composition;
 using AJ.Std.Composition.Contracts;
@@ -8,7 +7,6 @@ using Audience;
 using PollServiceProxy.Contracts;
 
 namespace Controllers.AttachedVirtual {
-  [Export(typeof(ICompositionPart))]
   public class VirtualControllersSystem : CompositionPartBase, ISubSystem {
     private const string CommonName = "VirtualConrollersSystem";
     private ICompositionRoot _compositionRoot;
