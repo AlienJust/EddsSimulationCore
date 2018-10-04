@@ -233,9 +233,12 @@ namespace Controllers.Lora {
 							var dataItself = PackInteleconCommand(cmd, controller.LoraControllerInfo.InteleconNetAddress);
 							var strBase64 = Convert.ToBase64String(dataItself);
 							var dataEndStr = "\"}";
-
-							_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(dataBeginStr + strBase64 + dataEndStr));
+							var textData = dataBeginStr + strBase64 + dataEndStr;
+							Log.Log(controller.TxTopicName);
+							Log.Log(textData);
+							_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData));
 							// TODO: after publishing command to MQTT need to wait?
+							Log.Log("Data were pushed to MQTT");
 						}
 						catch (AttachedControllerNotFoundException) {
 							// TODO: log
