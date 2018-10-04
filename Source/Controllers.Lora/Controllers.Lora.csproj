@@ -12,8 +12,6 @@
     <OutputPath>..\Debug</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
@@ -22,6 +20,7 @@
     <ProjectReference Include="..\Controllers.Contracts\Controllers.Contracts.csproj" />
     <ProjectReference Include="..\Controllers.Gateway.Attached\Controllers.Gateway.Attached.csproj" />
     <ProjectReference Include="..\Controllers.Gateway\Controllers.Gateway.csproj" />
+    <ProjectReference Include="..\nMqtt\nMqtt.csproj" />
     <ProjectReference Include="..\PollServiceProxy.Contracts\PollServiceProxy.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -48,9 +47,6 @@
     </Reference>
     <Reference Include="AJ.Std.Text.Contracts">
       <HintPath>..\References\AJ.Std.Text.Contracts.dll</HintPath>
-    </Reference>
-    <Reference Include="MqttFx, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\References\MqttFx.dll</HintPath>
     </Reference>
     <Reference Include="PollSystem.CommandManagement, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\References\PollSystem.CommandManagement.dll</HintPath>

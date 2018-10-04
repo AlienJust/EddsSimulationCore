@@ -16,10 +16,8 @@ using Audience;
 using Controllers.Gateway;
 using Controllers.Gateway.Attached;
 using Controllers.Lora.JsonBrocaar;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using MqttFx;
-using MqttFx.Packets;
+using nMqtt;
+using nMqtt.Messages;
 using Newtonsoft.Json;
 using PollServiceProxy.Contracts;
 using PollSystem.CommandManagement.Channels;
@@ -116,15 +114,11 @@ namespace Controllers.Lora {
 				_loraControllers.Add(new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig));
 			}
 
+			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};
 
-			_mqttClient = new MqttClient(new OptionsWrapper<MqttClientOptions>(new MqttClientOptions {
-				Server = _mqttBrokerHost,
-				Port = _mqttBrokerPort
-			}));
-			
-			//_mqttClient.SomeMessageReceived += OnMessageReceived;
-			//_mqttClient.ConnectAsync();
-			ConnectToMqttAsync();
+			_mqttClient.SomeMessageReceived += OnMessageReceived;
+			_mqttClient.ConnectAsync();
+
 
 			Log.Log("Waits until all RX topics would be subscribed...");
 			_initComplete.WaitOne();
@@ -136,37 +130,6 @@ namespace Controllers.Lora {
 			Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
 		}
 
-		async void ConnectToMqttAsync() {
-			var client = _mqttClient;
-			client.OnConnected += Connected;
-			client.OnDisconnected += Disconnected;
-			client.OnMessageReceived += MessageReceived;
-			if (await client.ConnectAsync() == ConnectReturnCode.ConnectionAccepted) {
-				var top = "/World";
-				Console.WriteLine("Subscribe:" + top);
-				Console.Write("SubscribeReturnCode: ");
-				var r = await client.SubscribeAsync(top);
-				Console.WriteLine(r.ReturnCodes);
-				//while (true)
-				//{
-				//    await client.PublishAsync("/World", Encoding.UTF8.GetBytes("Hello World!"), MqttQos.AtMostOnce);
-				//    await Task.Delay(2000);
-				//}
-			}
-		}
-
-		private void MessageReceived(Message obj) {
-			Log.Log(obj.Topic + " > " + Encoding.UTF8.GetString(obj.Payload));
-		}
-
-		private void Disconnected() {
-			Log.Log("Disconnected from MQTT broker");
-		}
-
-		private void Connected(ConnectReturnCode obj) {
-			Log.Log("Connected to MQTT broker");
-		}
-		/*
 		private void OnMessageReceived(MqttMessage message) {
 			switch (message) {
 				case ConnAckMessage msg:
@@ -182,7 +145,7 @@ namespace Controllers.Lora {
 									_mqttClient.Subscribe(loraControllerInfo.RxTopicName, Qos.AtLeastOnce);
 
 									// DEBUG:
-									// loraController.WhenPublishMessageReceived(Encoding.UTF8.GetBytes("{\"applicationID\":\"1\",\"applicationName\":\"mgf_vega_nucleo_debug_app\",\"deviceName\":\"mgf\",\"devEUI\":\"be7a0000000000c8\",\"deviceStatusBattery\":254,\"deviceStatusMargin\":26,\"rxInfo\":[{\"mac\":\"0000e8eb11417531\",\"time\":\"2018-07-05T10:20:46.12777Z\",\"rssi\":-46,\"loRaSNR\":7.2,\"name\":\"vega-gate\",\"latitude\":55.95764,\"longitude\":60.57098,\"altitude\":317}],\"txInfo\":{\"frequency\":868500000,\"dataRate\":{\"modulation\":\"LORA\",\"bandwidth\":125,\"spreadFactor\":7},\"adr\":true,\"codeRate\":\"4/5\"},\"fCnt\":2502,\"fPort\":2,\"data\":\"/////w==\"}"));
+									/*loraController.WhenPublishMessageReceived(Encoding.UTF8.GetBytes("{\"applicationID\":\"1\",\"applicationName\":\"mgf_vega_nucleo_debug_app\",\"deviceName\":\"mgf\",\"devEUI\":\"be7a0000000000c8\",\"deviceStatusBattery\":254,\"deviceStatusMargin\":26,\"rxInfo\":[{\"mac\":\"0000e8eb11417531\",\"time\":\"2018-07-05T10:20:46.12777Z\",\"rssi\":-46,\"loRaSNR\":7.2,\"name\":\"vega-gate\",\"latitude\":55.95764,\"longitude\":60.57098,\"altitude\":317}],\"txInfo\":{\"frequency\":868500000,\"dataRate\":{\"modulation\":\"LORA\",\"bandwidth\":125,\"spreadFactor\":7},\"adr\":true,\"codeRate\":\"4/5\"},\"fCnt\":2502,\"fPort\":2,\"data\":\"/////w==\"}"));*/
 
 									_prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(0.1));
 									Log.Log("Subscribed for topic" + loraControllerInfo.RxTopicName + " OK");
@@ -253,7 +216,7 @@ namespace Controllers.Lora {
 					break;
 			}
 		}
-		*/
+
 
 		private void CommandManagerDriverSideOnCommandRequestAccepted(string loraObjectName) {
 			try {
@@ -273,8 +236,7 @@ namespace Controllers.Lora {
 							var textData = dataBeginStr + strBase64 + dataEndStr;
 							Log.Log(controller.TxTopicName);
 							Log.Log(textData);
-							//_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData));
-							_mqttClient.PublishAsync("/World", Encoding.UTF8.GetBytes("Hello World!"), MqttQos.AtMostOnce);
+							_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData));
 							// TODO: after publishing command to MQTT need to wait?
 							Log.Log("Data were pushed to MQTT");
 						}
@@ -352,7 +314,6 @@ namespace Controllers.Lora {
 							Log.Log("[OK] Command was pushed to command manager");
 						}
 						else Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
-
 						break;
 					}
 				}
