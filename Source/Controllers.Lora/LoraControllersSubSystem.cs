@@ -236,7 +236,10 @@ namespace Controllers.Lora {
 							var textData = dataBeginStr + strBase64 + dataEndStr;
 							Log.Log(controller.TxTopicName);
 							Log.Log(textData);
-							_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData));
+							//_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData));
+							var enc = new MqttEncoding();
+							_mqttClient.Publish(controller.TxTopicName, enc.GetBytes(textData));
+							
 							// TODO: after publishing command to MQTT need to wait?
 							Log.Log("Data were pushed to MQTT");
 						}
