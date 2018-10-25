@@ -111,7 +111,9 @@ namespace Controllers.Lora {
 				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
 				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
 				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
-				_loraControllers.Add(new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig));
+				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig);
+				_loraControllers.Add(fullLoraConfig);
+				Log.Log(fullLoraConfig);
 			}
 
 			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};

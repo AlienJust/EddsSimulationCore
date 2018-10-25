@@ -11,5 +11,9 @@
 		public string DeviceId { get; }
 		public int DataTtl { get; }
 		public int InteleconNetAddress { get; }
+
+		public override string ToString() {
+			return "Name: " + Name + ", DeviceId: " + DeviceId + ", DataTtl: " + DataTtl + ", InteleconNetAddress: " + InteleconNetAddress;
+		}
 	}
 }

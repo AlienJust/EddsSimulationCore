@@ -13,5 +13,9 @@ namespace Controllers.Lora {
 			TxTopicName = txTopicName;
 			AttachedControllerConfig = attachedControllerConfig;
 		}
+
+		public override string ToString() {
+			return "LoraControllerInfo: {" + LoraControllerInfo + "}, RxTopicName: " + RxTopicName + ", TxTopicName: " + TxTopicName + ", AttachedControllerConfig: {" + AttachedControllerConfig + "}";
+		}
 	}
 }
