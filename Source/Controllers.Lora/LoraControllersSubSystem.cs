@@ -322,10 +322,9 @@ namespace Controllers.Lora {
 									notifyOperationComplete(); // выполняется в другом потоке
 								}
 							});
-							Log.Log("[OK] Command was pushed to command manager");
+							Log.Log("[OK] Command was pushed to command manager, breaking search lora object cycle");
+							break;
 						}
-						else Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
-						break;
 					}
 				}
 			}
@@ -334,6 +333,7 @@ namespace Controllers.Lora {
 			}
 			finally {
 				if (!isLoraControllerFound) {
+					Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
 					notifyOperationComplete();
 				}
 			}
