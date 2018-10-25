@@ -67,7 +67,8 @@ namespace ScadaClient.Udp {
 		public void SendData(ushort netAddress, byte commandCode, byte[] data) {
 			_sendDataWorker.AddWork(() => {
 				var buffer = data.GetNetBuffer(netAddress, commandCode);
-				_client.Send(buffer, buffer.Length, _serverEndPoint); // no timeout, no chance to know wether data were transmitted
+				Log.Log("buffer to send to UDP: " + buffer.ToText());
+				_client.Send(buffer, buffer.Length, _serverEndPoint); // no timeout, no chance to know whether data were transmitted
 			});
 		}
 

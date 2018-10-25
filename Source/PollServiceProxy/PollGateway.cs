@@ -151,6 +151,7 @@ namespace PollServiceProxy {
 		}
 
 		private void SendReplyData(string uplinkName, ushort netAddress, byte commandCode, byte[] data) {
+			Log.Log("Need to send data: " + data.ToText() + " to " + uplinkName + " with InteleconNetAddress=" + netAddress + " with commandCode=" + commandCode);
 			_scadaClients[uplinkName].Link.SendData(netAddress, commandCode, data);
 		}
 
