@@ -189,15 +189,18 @@ namespace Controllers.Lora {
 						Log.Log("Parsed fCnt = " + parsedJson.Fcnt);
 
 						var lastData = parsedJson.Data;
-						//var lastData = rawJson.Split(",\"data\":").Last();
-						//lastData = lastData.Substring(1, lastData.Length - 3);
 						Log.Log("Parsed RX LAST DATA: >>> " + lastData);
 						var receivedData = Convert.FromBase64String(lastData);
 						Log.Log("Decoded bytes are: " + receivedData.ToText());
 
 						// TODO: check if decoded bytes are inteleconCommand
-						if (receivedData.Length >= 8) {
-							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address :)
+						if (receivedData.Length == 4) {
+							if (receivedData[0] == 0x71) {
+								var netAddr = (ushort) (receivedData[2] + (receivedData[1] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
+							}
+						}
+						else if (receivedData.Length >= 8) {
+							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
 							var cmdCode = receivedData[2];
 							var rcvData = new byte[receivedData.Length - 8];
 							for (int i = 0; i < rcvData.Length; ++i) {
@@ -305,7 +308,10 @@ namespace Controllers.Lora {
 							var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
 							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(30), (exc, reply) => {
 								try {
-									sendReplyAction((byte) reply.Code, reply.Data);
+									if (exc != null && reply != null) {
+										sendReplyAction((byte) reply.Code, reply.Data);
+									}
+									
 								}
 								catch (Exception e) {
 									Log.Log("При обработке ответа от объекта LORA возникло исключение: " + e);

@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <LoraObjects>
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora99" DeviceId="be7a0000000000c8" InteleconNetAddress="99"/>
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora100" DeviceId="be7a0000000000c9" InteleconNetAddress="100"/>
+	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora99" DeviceId="be7a0000000000c7" InteleconNetAddress="99"/>
+	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora100" DeviceId="be7a0000000000c8" InteleconNetAddress="100"/>
+	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora103" DeviceId="be7a0000000000c9" InteleconNetAddress="103"/>
 </LoraObjects>
