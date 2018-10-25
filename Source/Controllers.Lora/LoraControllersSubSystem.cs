@@ -204,10 +204,12 @@ namespace Controllers.Lora {
 						else if (receivedData.Length >= 8) {
 							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
 							var cmdCode = receivedData[2];
+							Log.Log("Received data len is more then 8, net addr is " + netAddr+ ", commandCode=" + cmdCode);
 							var rcvData = new byte[receivedData.Length - 8];
 							for (int i = 0; i < rcvData.Length; ++i) {
 								rcvData[i] = receivedData[i + 5];
 							}
+							Log.Log("rcvData: " + rcvData.ToText());
 
 							Log.Log("Invoked data received event");
 							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(info.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
@@ -236,6 +238,7 @@ namespace Controllers.Lora {
 							var controller = FindControllerByAttachedInfo(type, channel, number);
 							var dataBeginStr = "{\"reference\": \"SCADA-edds\", \"confirmed\": true, \"fPort\": 2, \"data\": \"";
 							var dataItself = PackInteleconCommand(cmd, controller.LoraControllerInfo.InteleconNetAddress);
+							Log.Log("Data to pack to base64: " + dataItself.ToText());
 							var strBase64 = Convert.ToBase64String(dataItself);
 							var dataEndStr = "\"}";
 							var textData = dataBeginStr + strBase64 + dataEndStr;
@@ -310,13 +313,20 @@ namespace Controllers.Lora {
 							var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
 							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(30), (exc, reply) => {
 								try {
-									if (exc != null && reply != null) {
+									if (exc != null) throw exc; 
+									if (reply != null) {
+										Log.Log("-----------------------  Driver exc is null, sending reply back:");
+										Log.Log("-----------------------  Reply.Data: " + reply.Data.ToText());
+										Log.Log("-----------------------  Reply.Code: " + reply.Code);
 										sendReplyAction((byte) reply.Code, reply.Data);
 									}
-									
+									else {
+										Log.Log("-----------------------  ERROR IN PROGRAM: exc == null && reply == null!");
+										throw new Exception("Error in algorythm");
+									}
 								}
 								catch (Exception e) {
-									Log.Log("При обработке ответа от объекта LORA возникло исключение: " + e);
+									Log.Log("-----------------------  При обработке ответа от объекта LORA возникло исключение: " + e);
 								}
 								finally {
 									notifyOperationComplete(); // выполняется в другом потоке
