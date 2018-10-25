@@ -211,7 +211,7 @@ namespace Controllers.Lora {
 							}
 							Log.Log("rcvData: " + rcvData.ToText());
 
-							Log.Log("Invoked data received event");
+							Log.Log("Invoking data received event");
 							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(info.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
 						}
 						else Log.Log("Data bytes count too low, it cannot be Intelecon command");
