@@ -1,3 +1,4 @@
+//using System;
 using System.Collections.Generic;
 
 namespace PollServiceProxy {
@@ -5,5 +6,6 @@ namespace PollServiceProxy {
     string Name { get; }
     bool SendMicroPackets { get; }
     IEnumerable<IScadaAddress> ScadaAddresses { get; }
+		//object sendLock
   }
 }
