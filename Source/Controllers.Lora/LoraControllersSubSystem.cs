@@ -42,22 +42,15 @@ namespace Controllers.Lora {
 		private ICompositionRoot _compositionRoot;
 		private IEnumerable<LoraControllerInfoSimple> _loraControllerInfos;
 		private IList<LoraControllerFullInfo> _loraControllers;
-		//private IWorker<Action> _backWorker;
 
 		public string SystemName => "LoraControllers";
 
 		private string _mqttTopicStart;
-		//private MqttClient _mqttClient;
 		private MqttDriver _mqttDriver;
 
 		private readonly string _mqttBrokerHost = "127.0.0.1"; // TODO: Move to config file
 		private readonly int _mqttBrokerPort = 1883; // std port is 1883 TCP  // TODO: Move to config file
 
-		//private AutoResetEvent _prevSubscribeIsComplete;
-		//private ManualResetEvent _initComplete;
-		//private Exception _initException;
-
-		//private IChannelCommandManagerDriverSide<string> _commandManagerDriverSide;
 		private IChannelCommandManagerSystemSide<string> _commandManagerSystemSide;
 
 		public LoraControllersSubSystem() {
@@ -89,19 +82,9 @@ namespace Controllers.Lora {
 
 
 			var commandManager = new InteleconCommandManager<string>();
-			//_commandManagerDriverSide = commandManager;
 			_commandManagerSystemSide = commandManager;
 
-			//_commandManagerDriverSide.CommandRequestAccepted += CommandManagerDriverSideOnCommandRequestAccepted;
-
-			//_backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("Lora (mqtt) background worker", a => a(), ThreadPriority.BelowNormal, true, null);
 			Log.Log("Background worker Inited OK");
-
-			//_prevSubscribeIsComplete = new AutoResetEvent(false);
-			//_initComplete = new ManualResetEvent(false);
-			//_initException = null;
-
-			//dynamic serializer = new JsonSerializer();
 
 			_loraControllerInfos = XmlFactory.GetObjectsConfigurationsFromXml(Path.Combine(Env.CfgPath, "LoraControllerInfos.xml"));
 			_mqttTopicStart = "application/1/node/";
@@ -118,21 +101,7 @@ namespace Controllers.Lora {
 			}
 			
 			_mqttDriver = new MqttDriver(_mqttBrokerHost, _mqttBrokerPort, _loraControllers, commandManager);
-
-			//_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _mqttBrokerPort};
-
-			//_mqttClient.SomeMessageReceived += OnMessageReceived;
-			//_mqttClient.ConnectAsync();
-
-
-			Log.Log("Waits until all RX topics would be subscribed...");
-			//_initComplete.WaitOne();
-			//_initComplete.WaitOne(TimeSpan.FromSeconds(10.0));
-			//if (_initException != null)
-				//throw _initException;
-			//Log.Log(".ctor complete");
-
-
+			
 			Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
 		}
 
