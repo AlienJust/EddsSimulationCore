@@ -26,6 +26,8 @@ namespace Controllers.Lora {
 		private readonly string _mqttBrokerHost;
 		private readonly int _tcpPort;
 
+		private readonly IAttachedLastDataCache _lastSixsCache;
+
 
 		private readonly IList<LoraControllerFullInfo> _loraControllers;
 		private IChannelCommandManagerDriverSide<string> _commandManagerDriverSide;
@@ -49,6 +51,8 @@ namespace Controllers.Lora {
 			_initException = null;
 
 
+			_lastSixsCache = new AttachedLastDataCache();
+				
 			_backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("MqttDrv_Bw", a => a(), ThreadPriority.BelowNormal, true, null);
 
 			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _tcpPort};
@@ -65,35 +69,52 @@ namespace Controllers.Lora {
 		private void CommandManagerDriverSideOnCommandRequestAccepted(string loraObjectName) {
 			try {
 				var cmd = _commandManagerDriverSide.NextCommandForDriver(loraObjectName);
+				Log.Log("[OK] Command is taken by MQTT driver, or some command was replied and another one was taken instantly");
 				if (cmd != null) {
 					if (cmd.Code == 6 && cmd.Data.Count >= 8) {
 						var channel = cmd.Data[0];
 						var type = cmd.Data[1];
 						var number = cmd.Data[2];
+						var config = cmd.Data[3];
 
 						try {
 							var controller = FindControllerByAttachedInfo(type, channel, number);
-							var dataBeginStr = "{\"reference\": \"SCADA-edds\", \"confirmed\": true, \"fPort\": 2, \"data\": \"";
-							var dataItself = PackInteleconCommand(cmd, controller.LoraControllerInfo.InteleconNetAddress); // TODO: think about taking controller InteleconNetAddress from gateway
-							Log.Log("Data to pack to base64: " + dataItself.ToText());
-							var strBase64 = Convert.ToBase64String(dataItself);
-							var dataEndStr = "\"}";
-							var textData = dataBeginStr + strBase64 + dataEndStr;
-							Log.Log(controller.TxTopicName);
-							Log.Log(textData);
-							_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData), Qos.AtLeastOnce);
-							//var enc = new MqttEncoding();
-							//_mqttClient.Publish(controller.TxTopicName, enc.GetBytes(textData));
-
-							// TODO: after publishing command to MQTT need to wait?
-							Log.Log("Data were pushed to MQTT");
+							if (config < 10) {
+								// taking data from cache, if exist and time is less than cache ttl
+								var data = _lastSixsCache.GetData(loraObjectName, config);
+								if (DateTime.Now - data.Item1 < TimeSpan.FromSeconds(controller.LoraControllerInfo.DataTtl)) {
+									_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, cmd.Code, data.Item2));
+								}
+								else _commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+							}
+							else {
+								var dataBeginStr = "{\"reference\": \"SCADA-edds\", \"confirmed\": true, \"fPort\": 2, \"data\": \"";
+								var dataItself = PackInteleconCommand(cmd, controller.LoraControllerInfo.InteleconNetAddress); // TODO: think about taking controller InteleconNetAddress from gateway
+								Log.Log("Data to pack to base64: " + dataItself.ToText());
+								var strBase64 = Convert.ToBase64String(dataItself);
+								var dataEndStr = "\"}";
+								var textData = dataBeginStr + strBase64 + dataEndStr;
+								Log.Log(controller.TxTopicName);
+								Log.Log(textData);
+								_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData), Qos.AtLeastOnce);
+								//var enc = new MqttEncoding();
+								//_mqttClient.Publish(controller.TxTopicName, enc.GetBytes(textData));
+								// TODO: after publishing command to MQTT need to wait?
+								Log.Log("Data were pushed to MQTT");
+							}
 						}
 						catch (AttachedControllerNotFoundException) {
-							// TODO: log
+							_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+						}
+						catch (CannotGetDataFromCacheException) {
+							_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 						}
 					}
 					else
 						_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+				}
+				else {
+					Log.Log("[ER] Command is null");
 				}
 			}
 			catch (NeedGiveCommandBackException) {
@@ -184,9 +205,19 @@ namespace Controllers.Lora {
 							}
 
 							Log.Log("rcvData: " + rcvData.ToText());
-
 							Log.Log("Invoking data received event");
-							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(info.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
+
+							// controller data (command six) is added to cache
+							if (cmdCode == 6) {
+								var config = rcvData[3];
+								_lastSixsCache.AddData(info.LoraControllerInfo.Name, config, rcvData);
+							}
+							else {
+								// all the others commands works as normal
+								_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(info.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
+							}
+
+							CommandManagerDriverSideOnCommandRequestAccepted(info.LoraControllerInfo.Name);// after receiving good command trying to work with more accepted commands instantly
 						}
 						else Log.Log("Data bytes count too low, it cannot be Intelecon command");
 					}

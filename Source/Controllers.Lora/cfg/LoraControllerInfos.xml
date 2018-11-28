@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <LoraObjects>
 	<!--<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora99" DeviceId="be7a0000000000c7" InteleconNetAddress="99"/>-->
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora100" DeviceId="be7a0000000000c8" InteleconNetAddress="2000"/>
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora101" DeviceId="be7a0000000000c9" InteleconNetAddress="2000"/>
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora102" DeviceId="be7a0000000000ca" InteleconNetAddress="2000"/>
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora103" DeviceId="be7a0000000000cb" InteleconNetAddress="2000"/>
-	<LoraObject CurrentDataCacheTtlSeconds="5" Name="lora104" DeviceId="be7a0000000000cc" InteleconNetAddress="2000"/>
+	<LoraObject CurrentDataCacheTtlSeconds="325" Name="lora100" DeviceId="be7a0000000000c8" InteleconNetAddress="2000"/>
+	<LoraObject CurrentDataCacheTtlSeconds="325" Name="lora101" DeviceId="be7a0000000000c9" InteleconNetAddress="2000"/>
+	<LoraObject CurrentDataCacheTtlSeconds="325" Name="lora102" DeviceId="be7a0000000000ca" InteleconNetAddress="2000"/>
+	<LoraObject CurrentDataCacheTtlSeconds="325" Name="lora103" DeviceId="be7a0000000000cb" InteleconNetAddress="2000"/>
+	<LoraObject CurrentDataCacheTtlSeconds="325" Name="lora104" DeviceId="be7a0000000000cc" InteleconNetAddress="2000"/>
 </LoraObjects>

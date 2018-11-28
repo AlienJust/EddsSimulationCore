@@ -127,8 +127,7 @@ namespace Controllers.Lora {
 							isLoraControllerFound = true;
 							Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
 							var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
-							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
-								try {
+							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => { try {
 									if (exc != null) throw exc; 
 									if (reply != null) {
 										Log.Log("-----------------------  Driver exc is null, sending reply back:");
