@@ -218,8 +218,8 @@ namespace Controllers.Lora {
 							Log.Log("rcvData: " + rcvData.ToText());
 							Log.Log("Invoking data received event");
 
-							// controller data (command six) is added to cache
-							if (cmdCode == 6) {
+							// controller data (command six + 10 - reply) is added to cache
+							if (cmdCode == 16) {
 								var config = rcvData[3];
 								_lastSixsCache.AddData(info.LoraControllerInfo.Name, config, rcvData);
 							}
