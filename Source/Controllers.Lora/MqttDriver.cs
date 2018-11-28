@@ -104,14 +104,17 @@ namespace Controllers.Lora {
 							}
 						}
 						catch (AttachedControllerNotFoundException) {
-							_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, cmd.Code, cmd.Data.Take(8).ToList()));
+								//_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 						}
 						catch (CannotGetDataFromCacheException) {
-							_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, cmd.Code, cmd.Data.Take(8).ToList()));
+							//_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 						}
 					}
-					else
+					else {
 						_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+					}
 				}
 				else {
 					Log.Log("[ER] Command is null");
