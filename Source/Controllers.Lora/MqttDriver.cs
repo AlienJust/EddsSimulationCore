@@ -80,12 +80,17 @@ namespace Controllers.Lora {
 						try {
 							var controller = FindControllerByAttachedInfo(type, channel, number);
 							if (config < 10) {
+								Log.Log("Config = " + config + ", taking data from cache");
 								// taking data from cache, if exist and time is less than cache ttl
 								var data = _lastSixsCache.GetData(loraObjectName, config);
 								if (DateTime.Now - data.Item1 < TimeSpan.FromSeconds(controller.LoraControllerInfo.DataTtl)) {
-									_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, cmd.Code, data.Item2));
+									Log.Log("Data in cache is good, sending it back as 6 reply, data: " + cmd.Data.Take(8).ToText());
+									_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, data.Item2));
 								}
-								else _commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+								else {
+									Log.Log("Data in cache too old, sending empty 6 reply with data: " + cmd.Data.Take(8).ToText());
+									_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, cmd.Data.Take(8).ToList()));
+								}
 							}
 							else {
 								var dataBeginStr = "{\"reference\": \"SCADA-edds\", \"confirmed\": true, \"fPort\": 2, \"data\": \"";
@@ -104,15 +109,18 @@ namespace Controllers.Lora {
 							}
 						}
 						catch (AttachedControllerNotFoundException) {
-							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, cmd.Code, cmd.Data.Take(8).ToList()));
+							Log.Log("Replying empty package with data: " + cmd.Data.Take(8).ToText());
+							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, cmd.Data.Take(8).ToList()));
 								//_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 						}
 						catch (CannotGetDataFromCacheException) {
-							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, cmd.Code, cmd.Data.Take(8).ToList()));
+							Log.Log("Replying empty package with data: " + cmd.Data.Take(8).ToText());
+							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, cmd.Data.Take(8).ToList()));
 							//_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 						}
 					}
 					else {
+						Log.Log("Unknown cmd code = " + cmd.Code + " received, reply will not be sended");
 						_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 					}
 				}
