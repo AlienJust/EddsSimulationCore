@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 using AJ.Std.Loggers;
 using AJ.Std.Loggers.Contracts;
@@ -32,7 +33,9 @@ namespace Controllers.Lora {
 							var dataTtl = int.Parse(objectElement.Attribute("CurrentDataCacheTtlSeconds").Value);
 							var inteleconNetAddress = int.Parse(objectElement.Attribute("InteleconNetAddress").Value);
 
-							controllerInfos.Add(new LoraControllerInfoSimple(objectName, deviceId, dataTtl, inteleconNetAddress));
+							var subcontrollers = objectElement.Elements("LoraSubController").Select(e => e.Attribute("Name").Value).ToList();
+
+							controllerInfos.Add(new LoraControllerInfoSimple(objectName, deviceId, dataTtl, inteleconNetAddress, subcontrollers));
 							Log.Log("Loaded LORA XML config for object with name " + objectName);
 						}
 						catch (Exception ex) {

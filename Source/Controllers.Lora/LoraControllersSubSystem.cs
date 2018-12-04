@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using AJ.Std.Composition;
 using AJ.Std.Composition.Contracts;
-using AJ.Std.Concurrent;
-using AJ.Std.Concurrent.Contracts;
 using AJ.Std.Loggers;
 using AJ.Std.Loggers.Contracts;
 using AJ.Std.Text;
@@ -15,13 +10,8 @@ using AJ.Std.Text.Contracts;
 using Audience;
 using Controllers.Gateway;
 using Controllers.Gateway.Attached;
-using Controllers.Lora.JsonBrocaar;
-using nMqtt;
-using nMqtt.Messages;
-using Newtonsoft.Json;
 using PollServiceProxy.Contracts;
 using PollSystem.CommandManagement.Channels;
-using PollSystem.CommandManagement.Channels.Exceptions;
 
 namespace Controllers.Lora {
 	public class LoraControllersSubSystem : CompositionPartBase, ISubSystem {
@@ -95,7 +85,12 @@ namespace Controllers.Lora {
 				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
 				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
 				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
-				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig);
+				var subcontrollerConfigs = new List<LoraSubcontrollerConfig>();
+				foreach (var attachedObjectName in loraControllerInfo.AttachedToLoraControllers) {
+					var cfg = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(attachedObjectName);
+					subcontrollerConfigs.Add(new LoraSubcontrollerConfig(attachedObjectName, cfg));
+				}
+				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig, subcontrollerConfigs);
 				_loraControllers.Add(fullLoraConfig);
 				Log.Log(fullLoraConfig);
 			}

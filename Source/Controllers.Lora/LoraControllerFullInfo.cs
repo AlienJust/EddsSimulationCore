@@ -1,4 +1,5 @@
-﻿using Controllers.Gateway.Attached;
+﻿using System.Collections.Generic;
+using Controllers.Gateway.Attached;
 
 namespace Controllers.Lora {
 	internal class LoraControllerFullInfo {
@@ -7,11 +8,14 @@ namespace Controllers.Lora {
 		public string TxTopicName { get; }
 		public AttachedObjectConfig AttachedControllerConfig { get; }
 
-		public LoraControllerFullInfo(LoraControllerInfoSimple loraControllerInfo, string rxTopicName, string txTopicName, AttachedObjectConfig attachedControllerConfig) {
+		public IReadOnlyList<LoraSubcontrollerConfig> SubobjectsConfigs { get; }
+
+		public LoraControllerFullInfo(LoraControllerInfoSimple loraControllerInfo, string rxTopicName, string txTopicName, AttachedObjectConfig attachedControllerConfig, IReadOnlyList<LoraSubcontrollerConfig> subobjectsConfigs) {
 			LoraControllerInfo = loraControllerInfo;
 			RxTopicName = rxTopicName;
 			TxTopicName = txTopicName;
 			AttachedControllerConfig = attachedControllerConfig;
+			SubobjectsConfigs = subobjectsConfigs;
 		}
 
 		public override string ToString() {

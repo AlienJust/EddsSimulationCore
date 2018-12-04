@@ -1,15 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <AttachedControllerInfos>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="5" Name="bmz5"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="54" Name="bmz54"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="8" Name="bmz8"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="13" Number="22" Name="bmz22"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="99" Name="lora99"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="100" Name="lora100"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="103" Name="lora103"/>
-	<!--<AttachedControllerInfo Gateway="Gateway1" Channel="1" Type="13" Number="0" Name="v2"/>-->
-	<!--<AttachedControllerInfo Gateway="Gateway1" Channel="7" Type="13" Number="5" Name="PulseCounter1"/>-->
-	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="1" Type="13" Number="5" Name="PulseCounter2"/>-->
-	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="0" Type="13" Number="6" Name="PulseCounter3"/>-->
-	<!--<AttachedControllerInfo Gateway="Gateway2" Channel="6" Type="13" Number="50" Name="PulseCounter4"/>-->
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="10" Name="lora-self-10"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="11" Name="lora-self-11"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="10" Name="lora-self-12"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="11" Name="lora-self-13"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="10" Name="lora-self-14"/>
+	
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="100" Name="lora-counter-100"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="101" Name="lora-counter-101"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="102" Name="lora-counter-102"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="103" Name="lora-counter-103"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="104" Name="lora-counter-104"/>
 </AttachedControllerInfos>
