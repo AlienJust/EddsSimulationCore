@@ -20,7 +20,7 @@ using PollSystem.CommandManagement.Channels.Exceptions;
 
 namespace Controllers.Lora {
 	internal sealed class MqttDriver {
-		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Cyan), new ChainedFormatter(new ITextFormatter[] {new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ")})));
+		private static readonly ILogger Log = new RelayMultiLogger(true, new RelayLogger(Env.GlobalLog, new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })), new RelayLogger(new ColoredConsoleLogger(ConsoleColor.Black, ConsoleColor.Cyan), new ChainedFormatter(new ITextFormatter[] { new ThreadFormatter(" > ", false, true, false), new DateTimeFormatter(" > ") })));
 
 
 		private readonly string _mqttBrokerHost;
@@ -52,14 +52,14 @@ namespace Controllers.Lora {
 
 
 			_lastSixsCache = new AttachedLastDataCache();
-				
+
 			_backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("MqttDrv_Bw", a => a(), ThreadPriority.BelowNormal, true, null);
 
-			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) {Port = _tcpPort};
+			_mqttClient = new MqttClient(_mqttBrokerHost, Guid.NewGuid().ToString()) { Port = _tcpPort };
 			_mqttClient.SomeMessageReceived += OnMessageReceived;
 			_mqttClient.ConnectAsync();
 			Log.Log("Connecting to MQTT broker...");
-			
+
 			_initComplete.WaitOne(TimeSpan.FromSeconds(10.0));
 			if (_initException != null)
 				throw _initException;
@@ -111,7 +111,7 @@ namespace Controllers.Lora {
 						catch (AttachedControllerNotFoundException) {
 							Log.Log("Replying empty package with data: " + cmd.Data.Take(8).ToText());
 							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, cmd.Data.Take(8).ToList()));
-								//_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
+							//_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 						}
 						catch (CannotGetDataFromCacheException) {
 							Log.Log("Replying empty package with data: " + cmd.Data.Take(8).ToText());
@@ -134,7 +134,7 @@ namespace Controllers.Lora {
 		}
 
 		private static byte[] PackInteleconCommand(IInteleconCommand cmd, int inteleconNetworkAddress) {
-			return cmd.Data.ToArray().GetNetBuffer((ushort) inteleconNetworkAddress, (byte) cmd.Code);
+			return cmd.Data.ToArray().GetNetBuffer((ushort)inteleconNetworkAddress, (byte)cmd.Code);
 		}
 
 		private void OnMessageReceived(MqttMessage message) {
@@ -183,7 +183,7 @@ namespace Controllers.Lora {
 					Console.WriteLine(@"topic:{0} data:{1}", msg.TopicName, Encoding.UTF8.GetString(msg.Payload));
 
 					try {
-						var info = FindLoraControllerInfoByRxTopic(msg.TopicName);
+						var loraSelfInfo = FindLoraControllerInfoByRxTopic(msg.TopicName);
 
 						Log.Log("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
 						// TODO: reply to scada
@@ -197,17 +197,35 @@ namespace Controllers.Lora {
 
 						var lastData = parsedJson.Data;
 						Log.Log("Parsed RX LAST DATA: >>> " + lastData);
+
+						// need to save data as Intelecon six reply from lora controller
+						// 
+						var loraSelfData = new byte[10];
+						loraSelfData[0] = (byte)loraSelfInfo.AttachedControllerConfig.Channel;
+						loraSelfData[1] = (byte)loraSelfInfo.AttachedControllerConfig.Type;
+						loraSelfData[2] = (byte)loraSelfInfo.AttachedControllerConfig.Number;
+						loraSelfData[3] = 0; // config is current;
+						loraSelfData[4] = (byte)DateTime.Now.Hour;
+						loraSelfData[5] = (byte)DateTime.Now.Day;
+						loraSelfData[6] = (byte)DateTime.Now.Month;
+						loraSelfData[7] = (byte)DateTime.Now.Year;
+
+						loraSelfData[8] = (byte)parsedJson.DeviceStatusBattery;
+						loraSelfData[9] = (byte)parsedJson.Fport;
+
+						_lastSixsCache.AddData(loraSelfInfo.LoraControllerInfo.Name, 0, loraSelfData);
+
 						var receivedData = Convert.FromBase64String(lastData);
 						Log.Log("Decoded bytes are: " + receivedData.ToText());
 
 						// TODO: check if decoded bytes are inteleconCommand
 						if (receivedData.Length == 4) {
 							if (receivedData[0] == 0x71) {
-								var netAddr = (ushort) (receivedData[2] + (receivedData[1] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
+								var netAddr = (ushort)(receivedData[2] + (receivedData[1] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
 							}
 						}
 						else if (receivedData.Length >= 8) {
-							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
+							var netAddr = (ushort)(receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
 							var cmdCode = receivedData[2];
 							Log.Log("Received data len is more then 8, net addr is " + netAddr + ", commandCode=" + cmdCode);
 							var rcvData = new byte[receivedData.Length - 8];
@@ -216,19 +234,22 @@ namespace Controllers.Lora {
 							}
 
 							Log.Log("rcvData: " + rcvData.ToText());
-							Log.Log("Invoking data received event");
+							var subobjectConfig = loraSelfInfo.SubobjectsConfigs.FirstOrDefault(sc => sc.AttachedConfig.Channel == rcvData[0] && sc.AttachedConfig.Type == rcvData[1] && sc.AttachedConfig.Number 
+							                                                                          == rcvData[2]);
+							
+
 
 							// controller data (command six + 10 - reply) is added to cache
 							if (cmdCode == 16) {
 								var config = rcvData[3];
-								_lastSixsCache.AddData(info.LoraControllerInfo.Name, config, rcvData);
+								_lastSixsCache.AddData(loraSelfInfo.LoraControllerInfo.Name, config, rcvData);
 							}
 							else {
 								// all the others commands works as normal
-								_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(info.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
+								_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraSelfInfo.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
 							}
 
-							CommandManagerDriverSideOnCommandRequestAccepted(info.LoraControllerInfo.Name);// after receiving good command trying to work with more accepted commands instantly
+							CommandManagerDriverSideOnCommandRequestAccepted(loraSelfInfo.LoraControllerInfo.Name);// after receiving good command trying to work with more accepted commands instantly
 						}
 						else Log.Log("Data bytes count too low, it cannot be Intelecon command");
 					}
@@ -240,7 +261,7 @@ namespace Controllers.Lora {
 			}
 		}
 
-		
+
 		private LoraControllerFullInfo FindLoraControllerInfoByRxTopic(string msgTopicName) {
 			foreach (var loraControllerFullInfo in _loraControllers) {
 				if (loraControllerFullInfo.RxTopicName == msgTopicName)
