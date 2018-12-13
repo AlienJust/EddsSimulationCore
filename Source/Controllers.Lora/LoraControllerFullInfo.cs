@@ -8,9 +8,9 @@ namespace Controllers.Lora {
 		public string TxTopicName { get; }
 		public AttachedObjectConfig AttachedControllerConfig { get; }
 
-		public IReadOnlyList<LoraSubcontrollerConfig> SubobjectsConfigs { get; }
+		public IReadOnlyList<LoraSubcontrollerFullInfo> SubobjectsConfigs { get; }
 
-		public LoraControllerFullInfo(LoraControllerInfoSimple loraControllerInfo, string rxTopicName, string txTopicName, AttachedObjectConfig attachedControllerConfig, IReadOnlyList<LoraSubcontrollerConfig> subobjectsConfigs) {
+		public LoraControllerFullInfo(LoraControllerInfoSimple loraControllerInfo, string rxTopicName, string txTopicName, AttachedObjectConfig attachedControllerConfig, IReadOnlyList<LoraSubcontrollerFullInfo> subobjectsConfigs) {
 			LoraControllerInfo = loraControllerInfo;
 			RxTopicName = rxTopicName;
 			TxTopicName = txTopicName;

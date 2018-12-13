@@ -85,11 +85,13 @@ namespace Controllers.Lora {
 				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
 				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
 				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
-				var subcontrollerConfigs = new List<LoraSubcontrollerConfig>();
-				foreach (var attachedObjectName in loraControllerInfo.AttachedToLoraControllers) {
-					var cfg = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(attachedObjectName);
-					subcontrollerConfigs.Add(new LoraSubcontrollerConfig(attachedObjectName, cfg));
+				var subcontrollerConfigs = new List<LoraSubcontrollerFullInfo>();
+				
+				foreach (var subControllerInfo in loraControllerInfo.AttachedToLoraControllers) {
+					var cfg = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(subControllerInfo.Name);
+					subcontrollerConfigs.Add(new LoraSubcontrollerFullInfo(subControllerInfo, cfg));
 				}
+				
 				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig, subcontrollerConfigs);
 				_loraControllers.Add(fullLoraConfig);
 				Log.Log(fullLoraConfig);
@@ -112,8 +114,8 @@ namespace Controllers.Lora {
 					var number = data[2];
 					Log.Log("[OK] Command code and data length are correct, att_channel=" + channel + ", att_type=" + type + ", att_number=" + number);
 
-					if (type != 50) {
-						Log.Log("[ER] Att_type != 50, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
+					if (type != 51) {
+						Log.Log("[ER] Att_type != 51, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
 						return;
 					}
 

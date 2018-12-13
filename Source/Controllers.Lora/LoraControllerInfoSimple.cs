@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
 namespace Controllers.Lora {
-	struct LoraControllerInfoSimple {
-		public LoraControllerInfoSimple(string name, string deviceId, int dataTtl, int inteleconNetAddress, IReadOnlyList<string> attachedToLoraControllers) {
+	struct LoraControllerInfoSimple : ICachedDataControllerConfig {
+		public LoraControllerInfoSimple(string name, string deviceId, int dataTtl, int inteleconNetAddress, IReadOnlyList<LoraSubcontrollerInfoSimple> attachedToLoraControllers) {
 			Name = name;
 			DeviceId = deviceId;
 			DataTtl = dataTtl;
@@ -14,7 +14,7 @@ namespace Controllers.Lora {
 		public string DeviceId { get; }
 		public int DataTtl { get; }
 		public int InteleconNetAddress { get; }
-		public IReadOnlyList<string> AttachedToLoraControllers { get; }
+		public IReadOnlyList<LoraSubcontrollerInfoSimple> AttachedToLoraControllers { get; }
 
 		public override string ToString() {
 			return "Name: " + Name + ", DeviceId: " + DeviceId + ", DataTtl: " + DataTtl + ", InteleconNetAddress: " + InteleconNetAddress;

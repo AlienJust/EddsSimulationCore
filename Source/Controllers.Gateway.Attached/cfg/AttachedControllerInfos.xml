@@ -2,9 +2,9 @@
 <AttachedControllerInfos>
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="10" Name="lora-self-10"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="11" Name="lora-self-11"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="10" Name="lora-self-12"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="11" Name="lora-self-13"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="10" Name="lora-self-14"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="12" Name="lora-self-12"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="13" Name="lora-self-13"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="51" Number="14" Name="lora-self-14"/>
 	
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="100" Name="lora-counter-100"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="0" Type="50" Number="101" Name="lora-counter-101"/>
