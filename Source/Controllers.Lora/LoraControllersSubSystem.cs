@@ -82,12 +82,14 @@ namespace Controllers.Lora {
 			// need to create full info about controllers:
 			Log.Log("Creating full information for each lora controller...");
 			foreach (var loraControllerInfo in _loraControllerInfos) {
+				Log.Log("Lora object: " + loraControllerInfo.Name + ":");
 				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
 				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
 				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
 				var subcontrollerConfigs = new List<LoraSubcontrollerFullInfo>();
-
+				Log.Log("Adding subobjects");
 				foreach (var subControllerInfo in loraControllerInfo.AttachedToLoraControllers) {
+					Log.Log("  Searching in attached configs for att-config with name: " + subControllerInfo.Name);
 					var cfg = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(subControllerInfo.Name);
 					subcontrollerConfigs.Add(new LoraSubcontrollerFullInfo(subControllerInfo, cfg));
 				}
