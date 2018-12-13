@@ -78,13 +78,14 @@ namespace Controllers.Lora {
 						var config = cmd.Data[3];
 
 						try {
+							var loraControllerFullInfo = FindControllerByAttachedInfo(type, channel, number);
 							// TAKE DATA FROM CACHE:
 							if (config < 8) {
-								var cachedConfig = FindControllerOrSubcontroller(type, channel, number);
+								
 								Log.Log("Config = " + config + ", taking data from cache");
 								// taking data from cache, if exist and time is less than cache ttl
 								var data = _lastSixsCache.GetData(loraObjectName, config);
-								if (DateTime.Now - data.Item1 < TimeSpan.FromSeconds(cachedConfig.DataTtl)) {
+								if (DateTime.Now - data.Item1 < TimeSpan.FromSeconds(loraControllerFullInfo.LoraControllerInfo.DataTtl)) {
 									Log.Log("Data in cache is good, sending it back as 6 reply, data: " + cmd.Data.Take(8).ToText());
 									_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, data.Item2));
 								}
@@ -95,33 +96,32 @@ namespace Controllers.Lora {
 							}
 							// PUSH DATA TO MQTT TOPIC:
 							else {
-								var controller = FindControllerByAttachedInfo(type, channel, number);
+								Log.Log("Config = " + config + ", need to publish message to MQTT channel");
 								
 								var dataBeginStr = "{\"reference\": \"SCADA-edds\", \"confirmed\": true, \"fPort\": 2, \"data\": \"";
-								var dataItself = PackInteleconCommand(cmd, controller.LoraControllerInfo.InteleconNetAddress); // TODO: think about taking controller InteleconNetAddress from gateway
+								var dataItself = PackInteleconCommand(cmd, loraControllerFullInfo.LoraControllerInfo.InteleconNetAddress); // TODO: think about taking controller InteleconNetAddress from gateway
 								Log.Log("Data to pack to base64: " + dataItself.ToText());
 								var strBase64 = Convert.ToBase64String(dataItself);
 								var dataEndStr = "\"}";
 								var textData = dataBeginStr + strBase64 + dataEndStr;
-								Log.Log(controller.TxTopicName);
+								Log.Log(loraControllerFullInfo.TxTopicName);
 								Log.Log(textData);
-								_mqttClient.Publish(controller.TxTopicName, Encoding.UTF8.GetBytes(textData), Qos.AtLeastOnce);
+								_mqttClient.Publish(loraControllerFullInfo.TxTopicName, Encoding.UTF8.GetBytes(textData), Qos.AtLeastOnce);
 								
-								// TODO: after publishing command to MQTT need to wait?
-								Log.Log("Data were pushed to MQTT");
+								Log.Log("Data were published to MQTT topic");
 							}
 						}
 						catch (AttachedControllerNotFoundException) {
-							Log.Log("Replying empty package with data: " + cmd.Data.Take(8).ToText());
+							Log.Log("Attached controller was not found! Replying empty package with data: " + cmd.Data.Take(8).ToText());
 							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, cmd.Data.Take(8).ToList()));
 						}
 						catch (CannotGetDataFromCacheException) {
-							Log.Log("Replying empty package with data: " + cmd.Data.Take(8).ToText());
+							Log.Log("No data in cache! Replying empty package with data: " + cmd.Data.Take(8).ToText());
 							_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(123, 16, cmd.Data.Take(8).ToList()));
 						}
 					}
 					else {
-						Log.Log("Unknown cmd code = " + cmd.Code + " received, reply will not be sended");
+						Log.Log("Unknown cmd code = " + cmd.Code + " received! Invoking notification that reply will not be sent");
 						_commandManagerDriverSide.LastCommandReplyWillNotBeReceived(loraObjectName, cmd);
 					}
 				}
@@ -184,111 +184,110 @@ namespace Controllers.Lora {
 					Console.WriteLine(@"topic:{0} data:{1}", msg.TopicName, Encoding.UTF8.GetString(msg.Payload));
 
 					try {
-						var loraSelfInfo = FindLoraControllerInfoByRxTopic(msg.TopicName);
-
-						Log.Log("Received rx " + msg.TopicName + " >>> " + msg.Payload.ToText());
-						// TODO: reply to scada
-
+						Log.Log("Received RX " + msg.TopicName + " >>> " + msg.Payload.ToText());
 						var rawJson = Encoding.UTF8.GetString(msg.Payload);
 						Log.Log("Parsed RX >>> " + rawJson);
+						var suchTopicControllers = _loraControllers.Where(lc => lc.RxTopicName == msg.TopicName).ToList();
+						if (suchTopicControllers.Count > 0) {
+							var parsedJson = JsonConvert.DeserializeObject<MqttBrocaarMessage>(rawJson);
+							Log.Log("Parsed fPort = " + parsedJson.Fport);
+							Log.Log("Parsed fCnt = " + parsedJson.Fcnt);
 
-						var parsedJson = JsonConvert.DeserializeObject<MqttBrocaarMessage>(rawJson);
-						Log.Log("Parsed fPort = " + parsedJson.Fport);
-						Log.Log("Parsed fCnt = " + parsedJson.Fcnt);
+							var lastData = parsedJson.Data;
+							Log.Log("Parsed RX LAST DATA: >>> " + lastData);
+							// handles even several self controllers: o_O
+							var selfControllers = suchTopicControllers.Where(lc => lc.AttachedControllerConfig.Type == 51);
+							foreach (var fullControllerInfo in selfControllers) {
+								var loraSelfData = new byte[10];
+								loraSelfData[0] = (byte) fullControllerInfo.AttachedControllerConfig.Channel;
+								loraSelfData[1] = (byte) fullControllerInfo.AttachedControllerConfig.Type;
+								loraSelfData[2] = (byte) fullControllerInfo.AttachedControllerConfig.Number;
+								loraSelfData[3] = 0; // config is current;
+								loraSelfData[4] = (byte) DateTime.Now.Hour;
+								loraSelfData[5] = (byte) DateTime.Now.Day;
+								loraSelfData[6] = (byte) DateTime.Now.Month;
+								loraSelfData[7] = (byte) DateTime.Now.Year;
 
-						var lastData = parsedJson.Data;
-						Log.Log("Parsed RX LAST DATA: >>> " + lastData);
+								loraSelfData[8] = (byte) parsedJson.DeviceStatusBattery;
+								loraSelfData[9] = (byte) parsedJson.Fport;
 
-						// need to save data as Intelecon six reply from lora controller
-						// 
-						var loraSelfData = new byte[10];
-						loraSelfData[0] = (byte) loraSelfInfo.AttachedControllerConfig.Channel;
-						loraSelfData[1] = (byte) loraSelfInfo.AttachedControllerConfig.Type;
-						loraSelfData[2] = (byte) loraSelfInfo.AttachedControllerConfig.Number;
-						loraSelfData[3] = 0; // config is current;
-						loraSelfData[4] = (byte) DateTime.Now.Hour;
-						loraSelfData[5] = (byte) DateTime.Now.Day;
-						loraSelfData[6] = (byte) DateTime.Now.Month;
-						loraSelfData[7] = (byte) DateTime.Now.Year;
-
-						loraSelfData[8] = (byte) parsedJson.DeviceStatusBattery;
-						loraSelfData[9] = (byte) parsedJson.Fport;
-
-						_lastSixsCache.AddData(loraSelfInfo.LoraControllerInfo.Name, 0, loraSelfData); // lora controller is allways online, if we received something from MQTT
-
-						var receivedData = Convert.FromBase64String(lastData);
-						Log.Log("Decoded bytes are: " + receivedData.ToText());
-
-						// TODO: check if decoded bytes are inteleconCommand
-						if (receivedData.Length == 4) {
-							if (receivedData[0] == 0x71) {
-								var netAddr = (ushort) (receivedData[2] + (receivedData[1] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
-							}
-						}
-						else if (receivedData.Length >= 8) {
-							var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
-							var cmdCode = receivedData[2];
-							Log.Log("Received data len is more then 8, net addr is " + netAddr + ", commandCode=" + cmdCode);
-							var rcvData = new byte[receivedData.Length - 8];
-							for (int i = 0; i < rcvData.Length; ++i) {
-								rcvData[i] = receivedData[i + 5];
+								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraSelfData); // lora controller is allways online, if we received something from MQTT
+								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
 							}
 
-							Log.Log("rcvData: " + rcvData.ToText());
-							var subobjectConfig = loraSelfInfo.SubobjectsConfigs.FirstOrDefault(sc => sc.AttachedConfig.Channel == rcvData[0] && sc.AttachedConfig.Type == rcvData[1] && sc.AttachedConfig.Number == rcvData[2]);
+							// LORA ATTACHED CONTROLLER (technology):
+							var receivedData = Convert.FromBase64String(lastData);
+							Log.Log("Decoded bytes are: " + receivedData.ToText());
 
-							if (subobjectConfig != null) {
-								// controller data (command six + 10 - reply) is added to cache
-								var config = rcvData[3];
-								if (cmdCode == 16 && config < 8) {
-									_lastSixsCache.AddData(subobjectConfig.SubControllerInfo.Name, config, rcvData);
+							// TODO: check if decoded bytes are inteleconCommand
+							if (receivedData.Length == 4) {
+								if (receivedData[0] == 0x71) {
+									var netAddr = (ushort) (receivedData[2] + (receivedData[1] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
+								}
+							}
+							else if (receivedData.Length >= 8) {
+								Log.Log("Received data len is more then 8");
+								var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
+								var cmdCode = receivedData[2];
+								Log.Log("CommandCode=" + cmdCode);
+								if (cmdCode == 16) {
+									Log.Log("InteleconNetAddr=" + netAddr);
+									var rcvData = new byte[receivedData.Length - 8];
+									for (int i = 0; i < rcvData.Length; ++i) {
+										rcvData[i] = receivedData[i + 5];
+									}
+
+									Log.Log("rcvData: " + rcvData.ToText());
+									if (rcvData.Length >= 8) {
+										var channel = rcvData[0];
+										var type = rcvData[1];
+										var number = rcvData[2];
+										var config = rcvData[3];
+										Log.Log("ch=" + channel + ", type=" + type + ", number=" + number + ", config=" + config);
+										var loraController = suchTopicControllers.FirstOrDefault(lc => lc.AttachedControllerConfig.Channel == channel && lc.AttachedControllerConfig.Type == type && lc.AttachedControllerConfig.Number == number); // TAKING only first (or nothing)
+										if (loraController != null) {
+											Log.Log("Such lora controller was found, its name is " + loraController.LoraControllerInfo.Name);
+											if (config < 8) {
+												Log.Log("Config is less than 8 - saving data to cache");
+												_lastSixsCache.AddData(loraController.LoraControllerInfo.Name, config, rcvData);
+											}
+											else {
+												Log.Log("Config is greater or equals 8 - notifying system about answer from MQTT channel");
+												// all the others commands works as normal
+												_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraController.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
+											}
+											CommandManagerDriverSideOnCommandRequestAccepted(loraController.LoraControllerInfo.Name); // after receiving good command trying to work with more accepted commands instantly
+										}
+										else {
+											Log.Log("Cannot find lora controller with such channel, type, number");
+										}
+									}
+									else {
+										Log.Log("Reply is InteleconAttached, but preInfo.Length is less than 8");
+									}
 								}
 								else {
-									// all the others commands works as normal
-									_commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraSelfInfo.LoraControllerInfo.Name, new InteleconAnyCommand(123, cmdCode, rcvData));
+									Log.Log("Heared from MQTT Intelecon reply's command code is not 16");
 								}
-
-								CommandManagerDriverSideOnCommandRequestAccepted(loraSelfInfo.LoraControllerInfo.Name); // after receiving good command trying to work with more accepted commands instantly
 							}
-							else Log.Log("Attached subobject with ch=" + rcvData[0] + ", type=" + rcvData[1] + ", num=" + rcvData[2] + " was not found in config" );
+							else Log.Log("Data bytes count too low, it cannot be Intelecon command");
 						}
-						else Log.Log("Data bytes count too low, it cannot be Intelecon command");
+						else {
+							Log.Log("No lora controllers with such RxTopicName were found");
+						}
 					}
-					catch (AttachedControllerNotFoundException) {
-						Log.Log("Attached LORA controller not found by MQTT topic: " + msg.TopicName);
+					catch(Exception ex) {
+						Log.Log(ex);
 					}
 
 					break;
 			}
 		}
 
-
-		private LoraControllerFullInfo FindLoraControllerInfoByRxTopic(string msgTopicName) {
-			foreach (var loraControllerFullInfo in _loraControllers) {
-				if (loraControllerFullInfo.RxTopicName == msgTopicName)
-					return loraControllerFullInfo;
-			}
-
-			throw new AttachedControllerNotFoundException();
-		}
-
 		private LoraControllerFullInfo FindControllerByAttachedInfo(byte type, byte channel, byte number) {
 			foreach (var loraControllerFullInfo in _loraControllers) {
 				if (loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number)
 					return loraControllerFullInfo;
-			}
-
-			throw new AttachedControllerNotFoundException();
-		}
-		
-		private ICachedDataControllerConfig FindControllerOrSubcontroller(byte type, byte channel, byte number) {
-			foreach (var loraControllerFullInfo in _loraControllers) {
-				if (loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number)
-					return loraControllerFullInfo.LoraControllerInfo;
-				foreach (var subobjectsConfig in loraControllerFullInfo.SubobjectsConfigs) {
-					if (subobjectsConfig.AttachedConfig.Type == type && subobjectsConfig.AttachedConfig.Channel == channel && subobjectsConfig.AttachedConfig.Number == number)
-						return subobjectsConfig.SubControllerInfo;
-				}
 			}
 
 			throw new AttachedControllerNotFoundException();

@@ -33,15 +33,8 @@ namespace Controllers.Lora {
 							var dataTtl = int.Parse(objectElement.Attribute("CurrentDataCacheTtlSeconds").Value);
 							var inteleconNetAddress = int.Parse(objectElement.Attribute("InteleconNetAddress").Value);
 
-							var subcontrollersElements = objectElement.Elements("LoraSubObject");
-							List<LoraSubcontrollerInfoSimple> subcontrollers = new List<LoraSubcontrollerInfoSimple>();
-							foreach (var e in subcontrollersElements) {
-								var controller = new LoraSubcontrollerInfoSimple(e.Attribute("Name").Value, int.Parse(e.Attribute("CurrentDataCacheTtlSeconds").Value));
-								subcontrollers.Add(controller);
-							}
-								
 
-							controllerInfos.Add(new LoraControllerInfoSimple(objectName, deviceId, dataTtl, inteleconNetAddress, subcontrollers));
+							controllerInfos.Add(new LoraControllerInfoSimple(objectName, deviceId, dataTtl, inteleconNetAddress));
 							Log.Log("Loaded LORA XML config for object with name " + objectName);
 						}
 						catch (Exception ex) {

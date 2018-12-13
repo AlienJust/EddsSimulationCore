@@ -8,14 +8,11 @@ namespace Controllers.Lora {
 		public string TxTopicName { get; }
 		public AttachedObjectConfig AttachedControllerConfig { get; }
 
-		public IReadOnlyList<LoraSubcontrollerFullInfo> SubobjectsConfigs { get; }
-
-		public LoraControllerFullInfo(LoraControllerInfoSimple loraControllerInfo, string rxTopicName, string txTopicName, AttachedObjectConfig attachedControllerConfig, IReadOnlyList<LoraSubcontrollerFullInfo> subobjectsConfigs) {
+		public LoraControllerFullInfo(LoraControllerInfoSimple loraControllerInfo, string rxTopicName, string txTopicName, AttachedObjectConfig attachedControllerConfig) {
 			LoraControllerInfo = loraControllerInfo;
 			RxTopicName = rxTopicName;
 			TxTopicName = txTopicName;
 			AttachedControllerConfig = attachedControllerConfig;
-			SubobjectsConfigs = subobjectsConfigs;
 		}
 
 		public override string ToString() {

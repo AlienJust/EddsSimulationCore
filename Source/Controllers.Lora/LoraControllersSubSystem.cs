@@ -86,15 +86,8 @@ namespace Controllers.Lora {
 				var rxTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/rx";
 				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
 				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
-				var subcontrollerConfigs = new List<LoraSubcontrollerFullInfo>();
-				Log.Log("Adding subobjects");
-				foreach (var subControllerInfo in loraControllerInfo.AttachedToLoraControllers) {
-					Log.Log("  Searching in attached configs for att-config with name: " + subControllerInfo.Name);
-					var cfg = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(subControllerInfo.Name);
-					subcontrollerConfigs.Add(new LoraSubcontrollerFullInfo(subControllerInfo, cfg));
-				}
 
-				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig, subcontrollerConfigs);
+				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig);
 				_loraControllers.Add(fullLoraConfig);
 				Log.Log(fullLoraConfig);
 			}
@@ -122,11 +115,11 @@ namespace Controllers.Lora {
 					}
 
 					try {
-						var controllerNameAndTtl = FindControllerOrSubcontroller(subObjectName, type, channel, number);
+						var loraControllerFullInfo = FindLoraController(subObjectName, type, channel, number);
 						isLoraControllerFound = true;
-						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + controllerNameAndTtl.Name);
+						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
 						var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
-						_commandManagerSystemSide.AcceptRequestCommandForSending(controllerNameAndTtl.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
+						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
 							try {
 								if (exc != null) throw exc;
 								if (reply != null) {
@@ -177,18 +170,11 @@ namespace Controllers.Lora {
 			_gatewayControllesManagerPart.Release();
 		}
 
-		private ICachedDataControllerConfig FindControllerOrSubcontroller(string gatewayName, byte type, byte channel, byte number) {
+		private LoraControllerFullInfo FindLoraController(string gatewayName, byte type, byte channel, byte number) {
 			foreach (var loraControllerFullInfo in _loraControllers) {
 				Log.Log("Checking obj: " + loraControllerFullInfo.LoraControllerInfo.Name + " > " + loraControllerFullInfo.AttachedControllerConfig);
 				if (loraControllerFullInfo.AttachedControllerConfig.Gateway == gatewayName && loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number) {
-					return loraControllerFullInfo.LoraControllerInfo;
-				}
-
-				foreach (var subobjectsConfig in loraControllerFullInfo.SubobjectsConfigs) {
-					Log.Log("  Checking subobj: " + subobjectsConfig.SubControllerInfo.Name + " > " + subobjectsConfig.AttachedConfig);
-					if (subobjectsConfig.AttachedConfig.Gateway == gatewayName && subobjectsConfig.AttachedConfig.Type == type && subobjectsConfig.AttachedConfig.Channel == channel && subobjectsConfig.AttachedConfig.Number == number) {
-						return subobjectsConfig.SubControllerInfo;
-					}
+					return loraControllerFullInfo;
 				}
 			}
 
