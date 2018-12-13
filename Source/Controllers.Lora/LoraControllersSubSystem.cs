@@ -145,7 +145,7 @@ namespace Controllers.Lora {
 								notifyOperationComplete(); // выполняется в другом потоке
 							}
 						});
-						Log.Log("[OK] Command was pushed to command manager, breaking search lora object cycle");
+						Log.Log("[OK] Command was pushed to command manager");
 					}
 					catch (AttachedControllerNotFoundException) {
 						Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
@@ -161,7 +161,7 @@ namespace Controllers.Lora {
 			}
 			finally {
 				if (!isLoraControllerFound) {
-					Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
+					Log.Log("[OK] Such LORA controller was NOT FOUND in configs, lets notify upper system by calling back notifyOperationComplete();");
 					notifyOperationComplete();
 				}
 			}
