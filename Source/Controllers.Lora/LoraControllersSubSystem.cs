@@ -115,7 +115,7 @@ namespace Controllers.Lora {
 					Log.Log("[OK] Command code and data length are correct, att_channel=" + channel + ", att_type=" + type + ", att_number=" + number);
 
 					if (type != 50 && type != 51) {
-						Log.Log("[ER] Att_type != 51, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
+						Log.Log("[ER] Att_type != 50 && Att_type != 51, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
 						return;
 					}
 
@@ -177,11 +177,16 @@ namespace Controllers.Lora {
 
 		private ICachedDataControllerConfig FindControllerOrSubcontroller(string gatewayName, byte type, byte channel, byte number) {
 			foreach (var loraControllerFullInfo in _loraControllers) {
-				if (loraControllerFullInfo.AttachedControllerConfig.Gateway == gatewayName && loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number)
+				Log.Log("Checking obj: " + loraControllerFullInfo.LoraControllerInfo.Name + " > " + loraControllerFullInfo.AttachedControllerConfig);
+				if (loraControllerFullInfo.AttachedControllerConfig.Gateway == gatewayName && loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number) {
 					return loraControllerFullInfo.LoraControllerInfo;
+				}
+
 				foreach (var subobjectsConfig in loraControllerFullInfo.SubobjectsConfigs) {
-					if (subobjectsConfig.AttachedConfig.Gateway == gatewayName && subobjectsConfig.AttachedConfig.Type == type && subobjectsConfig.AttachedConfig.Channel == channel && subobjectsConfig.AttachedConfig.Number == number)
+					Log.Log("  Checking subobj: " + subobjectsConfig.SubControllerInfo.Name + " > " + subobjectsConfig.AttachedConfig);
+					if (subobjectsConfig.AttachedConfig.Gateway == gatewayName && subobjectsConfig.AttachedConfig.Type == type && subobjectsConfig.AttachedConfig.Channel == channel && subobjectsConfig.AttachedConfig.Number == number) {
 						return subobjectsConfig.SubControllerInfo;
+					}
 				}
 			}
 
