@@ -120,11 +120,11 @@ namespace Controllers.Lora {
 					}
 
 					try {
-						var loraControllerFullInfo = FindControllerOrSubcontroller(subObjectName, type, channel, number);
+						var controllerNameAndTtl = FindControllerOrSubcontroller(subObjectName, type, channel, number);
 						isLoraControllerFound = true;
-						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
+						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + controllerNameAndTtl.Name);
 						var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
-						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
+						_commandManagerSystemSide.AcceptRequestCommandForSending(controllerNameAndTtl.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
 							try {
 								if (exc != null) throw exc;
 								if (reply != null) {
