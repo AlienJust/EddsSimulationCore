@@ -198,7 +198,7 @@ namespace Controllers.Lora {
 							// handles even several self controllers: o_O
 							var selfControllers = suchTopicControllers.Where(lc => lc.AttachedControllerConfig.Type == 51);
 							foreach (var fullControllerInfo in selfControllers) {
-								var loraSelfData = new byte[10];
+								var loraSelfData = new byte[18];
 								loraSelfData[0] = (byte) fullControllerInfo.AttachedControllerConfig.Channel;
 								loraSelfData[1] = (byte) fullControllerInfo.AttachedControllerConfig.Type;
 								loraSelfData[2] = (byte) fullControllerInfo.AttachedControllerConfig.Number;
@@ -210,6 +210,22 @@ namespace Controllers.Lora {
 
 								loraSelfData[8] = (byte) parsedJson.DeviceStatusBattery;
 								loraSelfData[9] = (byte) parsedJson.Fport;
+
+								float latitude;
+								float longitude;
+
+								var rxInfo = parsedJson.RxInfo.FirstOrDefault();
+								if (rxInfo == null) {
+									latitude = 0f;
+									longitude = 0f;
+								}
+								else {
+									latitude = (float)rxInfo.Latitude;
+									longitude = (float)rxInfo.Longitude;
+								}
+								
+								BitConverter.GetBytes(latitude).CopyTo(loraSelfData, 10);
+								BitConverter.GetBytes(longitude).CopyTo(loraSelfData, 14);
 
 								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraSelfData); // lora controller is allways online, if we received something from MQTT
 								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
