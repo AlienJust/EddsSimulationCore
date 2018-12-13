@@ -86,19 +86,19 @@ namespace Controllers.Lora {
 				var txTopicName = _mqttTopicStart + loraControllerInfo.DeviceId + "/tx";
 				var attachedControllerConfig = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(loraControllerInfo.Name);
 				var subcontrollerConfigs = new List<LoraSubcontrollerFullInfo>();
-				
+
 				foreach (var subControllerInfo in loraControllerInfo.AttachedToLoraControllers) {
 					var cfg = _attachedControllersInfoSystem.GetAttachedControllerConfigByName(subControllerInfo.Name);
 					subcontrollerConfigs.Add(new LoraSubcontrollerFullInfo(subControllerInfo, cfg));
 				}
-				
+
 				var fullLoraConfig = new LoraControllerFullInfo(loraControllerInfo, rxTopicName, txTopicName, attachedControllerConfig, subcontrollerConfigs);
 				_loraControllers.Add(fullLoraConfig);
 				Log.Log(fullLoraConfig);
 			}
-			
+
 			_mqttDriver = new MqttDriver(_mqttBrokerHost, _mqttBrokerPort, _loraControllers, commandManager);
-			
+
 			Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
 		}
 
@@ -119,34 +119,40 @@ namespace Controllers.Lora {
 						return;
 					}
 
-					foreach (var loraControllerFullInfo in _loraControllers) {
-						if (loraControllerFullInfo.AttachedControllerConfig.Gateway == subObjectName && channel == loraControllerFullInfo.AttachedControllerConfig.Channel && type == loraControllerFullInfo.AttachedControllerConfig.Type && number == loraControllerFullInfo.AttachedControllerConfig.Number) {
-							isLoraControllerFound = true;
-							Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
-							var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
-							_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => { try {
-									if (exc != null) throw exc; 
-									if (reply != null) {
-										Log.Log("-----------------------  Driver exc is null, sending reply back:");
-										Log.Log("-----------------------  Reply.Data: " + reply.Data.ToText());
-										Log.Log("-----------------------  Reply.Code: " + reply.Code);
-										sendReplyAction((byte) reply.Code, reply.Data);
-									}
-									else {
-										Log.Log("-----------------------  ERROR IN PROGRAM: exc == null && reply == null!");
-										throw new Exception("Error in algorythm");
-									}
+					try {
+						var loraControllerFullInfo = FindControllerOrSubcontroller(subObjectName, type, channel, number);
+						isLoraControllerFound = true;
+						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
+						var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
+						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
+							try {
+								if (exc != null) throw exc;
+								if (reply != null) {
+									Log.Log("-----------------------  Driver exc is null, sending reply back:");
+									Log.Log("-----------------------  Reply.Data: " + reply.Data.ToText());
+									Log.Log("-----------------------  Reply.Code: " + reply.Code);
+									sendReplyAction((byte) reply.Code, reply.Data);
 								}
-								catch (Exception e) {
-									Log.Log("-----------------------  При обработке ответа от объекта LORA возникло исключение: " + e);
+								else {
+									Log.Log("-----------------------  ERROR IN PROGRAM: exc == null && reply == null!");
+									throw new Exception("Error in algorythm");
 								}
-								finally {
-									notifyOperationComplete(); // выполняется в другом потоке
-								}
-							});
-							Log.Log("[OK] Command was pushed to command manager, breaking search lora object cycle");
-							break;
-						}
+							}
+							catch (Exception e) {
+								Log.Log("-----------------------  При обработке ответа от объекта LORA возникло исключение: " + e);
+							}
+							finally {
+								notifyOperationComplete(); // выполняется в другом потоке
+							}
+						});
+						Log.Log("[OK] Command was pushed to command manager, breaking search lora object cycle");
+					}
+					catch (AttachedControllerNotFoundException) {
+						Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
+						//notifyOperationComplete();
+					}
+					catch (Exception ex) {
+						Log.Log(ex);
 					}
 				}
 			}
@@ -167,6 +173,19 @@ namespace Controllers.Lora {
 			_scadaPollGatewayPart.Release();
 			_attachedControllersInfoSystemPart.Release();
 			_gatewayControllesManagerPart.Release();
+		}
+
+		private ICachedDataControllerConfig FindControllerOrSubcontroller(string gatewayName, byte type, byte channel, byte number) {
+			foreach (var loraControllerFullInfo in _loraControllers) {
+				if (loraControllerFullInfo.AttachedControllerConfig.Gateway == gatewayName && loraControllerFullInfo.AttachedControllerConfig.Type == type && loraControllerFullInfo.AttachedControllerConfig.Channel == channel && loraControllerFullInfo.AttachedControllerConfig.Number == number)
+					return loraControllerFullInfo.LoraControllerInfo;
+				foreach (var subobjectsConfig in loraControllerFullInfo.SubobjectsConfigs) {
+					if (subobjectsConfig.AttachedConfig.Gateway == gatewayName && subobjectsConfig.AttachedConfig.Type == type && subobjectsConfig.AttachedConfig.Channel == channel && subobjectsConfig.AttachedConfig.Number == number)
+						return subobjectsConfig.SubControllerInfo;
+				}
+			}
+
+			throw new AttachedControllerNotFoundException();
 		}
 	}
 }
