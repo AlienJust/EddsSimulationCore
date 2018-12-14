@@ -227,7 +227,7 @@ namespace Controllers.Lora {
 								BitConverter.GetBytes(latitude).CopyTo(loraSelfData, 10);
 								BitConverter.GetBytes(longitude).CopyTo(loraSelfData, 14);
 
-								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraSelfData); // lora controller is allways online, if we received something from MQTT
+								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraSelfData); // lora controller is always online, if we received something from MQTT
 								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
 							}
 
