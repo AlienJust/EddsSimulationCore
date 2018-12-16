@@ -253,7 +253,7 @@ namespace Controllers.Lora {
 								Log.Log("fCnt was added to array");
 
 								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraMetadata); // lora controller is always online, if we received something from MQTT
-								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
+								Log.Log("For LORA METADATA controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
 							}
 
 							// SOME OTHER COUNTER TYPE (technology: Karat, self, etc):
