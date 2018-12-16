@@ -244,11 +244,13 @@ namespace Controllers.Lora {
 								
 								
 								BitConverter.GetBytes(parsedJson.TxInfo.Frequency).CopyTo(loraMetadata, 28);
+								Log.Log("TX INFO frequency was added to array");
 								BitConverter.GetBytes((short)parsedJson.TxInfo.DataRate.Bandwidth).CopyTo(loraMetadata, 32);
+								Log.Log("TX INFO DataRate.Bandwidth was added to array");
 								BitConverter.GetBytes((short)parsedJson.TxInfo.DataRate.SpreadFactor).CopyTo(loraMetadata, 34);
-								
+								Log.Log("TX INFO DataRate.SpreadFactor was added to array");
 								BitConverter.GetBytes(parsedJson.Fcnt).CopyTo(loraMetadata, 36);
-								Log.Log("TX INFO was added to array");
+								Log.Log("fCnt was added to array");
 
 								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraMetadata); // lora controller is always online, if we received something from MQTT
 								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
