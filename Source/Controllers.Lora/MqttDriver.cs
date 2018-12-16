@@ -219,6 +219,7 @@ namespace Controllers.Lora {
 								
 								var rxInfo = parsedJson.RxInfo.FirstOrDefault();
 								if (rxInfo == null) {
+									Log.Log("RX INFO HAS NO ITEMS!");
 									rxLatitude = 0f;
 									rxLongitude = 0f;
 									rxAltitude = 0f;
@@ -226,6 +227,7 @@ namespace Controllers.Lora {
 									rxRssi = 0;
 								}
 								else {
+									Log.Log("RX INFO exist");
 									rxLatitude = (float)rxInfo.Latitude;
 									rxLongitude = (float)rxInfo.Longitude;
 									rxAltitude = rxInfo.Altitude;
@@ -238,6 +240,7 @@ namespace Controllers.Lora {
 								BitConverter.GetBytes(rxAltitude).CopyTo(loraMetadata, 18);
 								BitConverter.GetBytes(rxLoraSnr).CopyTo(loraMetadata, 22);
 								BitConverter.GetBytes(rxRssi).CopyTo(loraMetadata, 26);
+								Log.Log("RX INFO was added to array");
 								
 								
 								BitConverter.GetBytes(parsedJson.TxInfo.Frequency).CopyTo(loraMetadata, 28);
@@ -245,6 +248,7 @@ namespace Controllers.Lora {
 								BitConverter.GetBytes((short)parsedJson.TxInfo.DataRate.SpreadFactor).CopyTo(loraMetadata, 34);
 								
 								BitConverter.GetBytes(parsedJson.Fcnt).CopyTo(loraMetadata, 36);
+								Log.Log("TX INFO was added to array");
 
 								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraMetadata); // lora controller is always online, if we received something from MQTT
 								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
