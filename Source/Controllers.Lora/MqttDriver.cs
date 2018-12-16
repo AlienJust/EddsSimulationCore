@@ -195,52 +195,72 @@ namespace Controllers.Lora {
 
 							var lastData = parsedJson.Data;
 							Log.Log("Parsed RX LAST DATA: >>> " + lastData);
-							// handles even several self controllers: o_O
-							var selfControllers = suchTopicControllers.Where(lc => lc.AttachedControllerConfig.Type == 51);
+							// handles even several "metadata controllers": o_O
+							var selfControllers = suchTopicControllers.Where(lc => lc.AttachedControllerConfig.Type == 49);
 							foreach (var fullControllerInfo in selfControllers) {
-								var loraSelfData = new byte[18];
-								loraSelfData[0] = (byte) fullControllerInfo.AttachedControllerConfig.Channel;
-								loraSelfData[1] = (byte) fullControllerInfo.AttachedControllerConfig.Type;
-								loraSelfData[2] = (byte) fullControllerInfo.AttachedControllerConfig.Number;
-								loraSelfData[3] = 0; // config is current;
-								loraSelfData[4] = (byte) DateTime.Now.Hour;
-								loraSelfData[5] = (byte) DateTime.Now.Day;
-								loraSelfData[6] = (byte) DateTime.Now.Month;
-								loraSelfData[7] = (byte) DateTime.Now.Year;
+								var loraMetadata = new byte[40];
+								loraMetadata[0] = (byte) fullControllerInfo.AttachedControllerConfig.Channel;
+								loraMetadata[1] = (byte) fullControllerInfo.AttachedControllerConfig.Type;
+								loraMetadata[2] = (byte) fullControllerInfo.AttachedControllerConfig.Number;
+								loraMetadata[3] = 0; // config is current;
+								loraMetadata[4] = (byte) DateTime.Now.Hour;
+								loraMetadata[5] = (byte) DateTime.Now.Day;
+								loraMetadata[6] = (byte) DateTime.Now.Month;
+								loraMetadata[7] = (byte) DateTime.Now.Year;
 
-								loraSelfData[8] = (byte) parsedJson.DeviceStatusBattery;
-								loraSelfData[9] = (byte) parsedJson.Fport;
+								loraMetadata[8] = (byte) parsedJson.DeviceStatusBattery;
+								loraMetadata[9] = (byte) parsedJson.Fport;
 
-								float latitude;
-								float longitude;
-
+								float rxLatitude;
+								float rxLongitude;
+								float rxAltitude;
+								float rxLoraSnr;
+								short rxRssi;
+								
 								var rxInfo = parsedJson.RxInfo.FirstOrDefault();
 								if (rxInfo == null) {
-									latitude = 0f;
-									longitude = 0f;
+									rxLatitude = 0f;
+									rxLongitude = 0f;
+									rxAltitude = 0f;
+									rxLoraSnr = 0f;
+									rxRssi = 0;
 								}
 								else {
-									latitude = (float)rxInfo.Latitude;
-									longitude = (float)rxInfo.Longitude;
+									rxLatitude = (float)rxInfo.Latitude;
+									rxLongitude = (float)rxInfo.Longitude;
+									rxAltitude = rxInfo.Altitude;
+									rxLoraSnr = (float) rxInfo.LoraSnr;
+									rxRssi = (short)rxInfo.Rssi;
 								}
 								
-								BitConverter.GetBytes(latitude).CopyTo(loraSelfData, 10);
-								BitConverter.GetBytes(longitude).CopyTo(loraSelfData, 14);
+								BitConverter.GetBytes(rxLatitude).CopyTo(loraMetadata, 10);
+								BitConverter.GetBytes(rxLongitude).CopyTo(loraMetadata, 14);
+								BitConverter.GetBytes(rxAltitude).CopyTo(loraMetadata, 18);
+								BitConverter.GetBytes(rxLoraSnr).CopyTo(loraMetadata, 22);
+								BitConverter.GetBytes(rxRssi).CopyTo(loraMetadata, 26);
+								
+								
+								BitConverter.GetBytes(parsedJson.TxInfo.Frequency).CopyTo(loraMetadata, 28);
+								BitConverter.GetBytes((short)parsedJson.TxInfo.DataRate.Bandwidth).CopyTo(loraMetadata, 32);
+								BitConverter.GetBytes((short)parsedJson.TxInfo.DataRate.SpreadFactor).CopyTo(loraMetadata, 34);
+								
+								BitConverter.GetBytes(parsedJson.Fcnt).CopyTo(loraMetadata, 36);
 
-								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraSelfData); // lora controller is always online, if we received something from MQTT
+								_lastSixsCache.AddData(fullControllerInfo.LoraControllerInfo.Name, 0, loraMetadata); // lora controller is always online, if we received something from MQTT
 								Log.Log("For LORA SELF controller with name = " + fullControllerInfo.LoraControllerInfo.Name + " data was added to cache");
 							}
 
-							// LORA ATTACHED CONTROLLER (technology):
+							// SOME OTHER COUNTER TYPE (technology: Karat, self, etc):
 							var receivedData = Convert.FromBase64String(lastData);
 							Log.Log("Decoded bytes are: " + receivedData.ToText());
 
-							// TODO: check if decoded bytes are inteleconCommand
+							// Intelecon2 micropacket:
 							if (receivedData.Length == 4) {
 								if (receivedData[0] == 0x71) {
 									var netAddr = (ushort) (receivedData[2] + (receivedData[1] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken
 								}
 							}
+							// full Intelecon packet
 							else if (receivedData.Length >= 8) {
 								Log.Log("Received data len is more then 8");
 								var netAddr = (ushort) (receivedData[4] + (receivedData[3] << 8)); // I'm not really need this net address, cause I know, from witch topic data were taken

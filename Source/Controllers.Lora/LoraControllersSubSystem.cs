@@ -109,7 +109,7 @@ namespace Controllers.Lora {
 					var number = data[2];
 					Log.Log("[OK] Command code and data length are correct, att_channel=" + channel + ", att_type=" + type + ", att_number=" + number);
 
-					if (type != 50 && type != 51) {
+					if (type != 49 && type != 50 && type != 51) {
 						Log.Log("[ER] Att_type != 50 && Att_type != 51, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
 						return;
 					}
