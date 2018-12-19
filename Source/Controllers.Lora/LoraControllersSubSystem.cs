@@ -110,7 +110,7 @@ namespace Controllers.Lora {
 					Log.Log("[OK] Command code and data length are correct, att_channel=" + channel + ", att_type=" + type + ", att_number=" + number);
 
 					if (type != 49 && type != 50 && type != 51) {
-						Log.Log("[ER] Att_type != 50 && Att_type != 51, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
+						Log.Log("[ER] Att_type != 49 && Att_type != 50 && Att_type != 51, LORA controllers subsystem does not handling such (" + type + ") att_type, return");
 						return;
 					}
 
@@ -119,7 +119,7 @@ namespace Controllers.Lora {
 						isLoraControllerFound = true;
 						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
 						var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
-						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(65), (exc, reply) => {
+						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(200), (exc, reply) => {
 							try {
 								if (exc != null) throw exc;
 								if (reply != null) {
