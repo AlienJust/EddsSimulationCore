@@ -119,7 +119,7 @@ namespace Controllers.Lora {
 						isLoraControllerFound = true;
 						Log.Log("[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " + loraControllerFullInfo.LoraControllerInfo.Name);
 						var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
-						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(200), (exc, reply) => {
+						_commandManagerSystemSide.AcceptRequestCommandForSending(loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal, TimeSpan.FromSeconds(400), (exc, reply) => {
 							try {
 								if (exc != null) throw exc;
 								if (reply != null) {
@@ -140,7 +140,7 @@ namespace Controllers.Lora {
 								notifyOperationComplete(); // выполняется в другом потоке
 							}
 						});
-						Log.Log("[OK] Command was pushed to command manager");
+						Log.Log("[OK] Command was pushed to command manager, timeout = 400 sec");
 					}
 					catch (AttachedControllerNotFoundException) {
 						Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
