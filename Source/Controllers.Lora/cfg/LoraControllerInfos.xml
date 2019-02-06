@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <LoraObjects>
+	<!--
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c8" InteleconNetAddress="2000" Name="lora-metadata-100"/>
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c8" InteleconNetAddress="2000" Name="lora-counter-100"/>
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c8" InteleconNetAddress="2000" Name="lora-self-100"/>
@@ -24,4 +25,5 @@
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-counter-104"/>
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-self-104"/>
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-sdv-104"/>
+	-->
 </LoraObjects>
