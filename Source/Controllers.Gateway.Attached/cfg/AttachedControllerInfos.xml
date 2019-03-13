@@ -28,5 +28,6 @@
 	<AttachedControllerInfo Gateway="gate2" Channel="101" Type="53" Number="0" Name="lora-se301-101"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="102" Type="53" Number="0" Name="lora-se301-102"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="103" Type="53" Number="0" Name="lora-se301-103"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="104" Type="53" Number="0" Name="lora-se301-104"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="104" Type="53" Number="1" Name="lora-se301-104-1"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="104" Type="53" Number="2" Name="lora-se301-104-2"/>
 </AttachedControllerInfos>
