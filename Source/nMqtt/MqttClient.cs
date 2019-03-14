@@ -230,18 +230,4 @@ namespace nMqtt {
 	public delegate void SomeMessageReceivedDelegate(MqttMessage message);
 
 	public delegate void MessageReceivedDelegate(object sender, MessageReceivedEventArgs args);
-
-	public class MessageReceivedEventArgs : EventArgs {
-		public MessageReceivedEventArgs(string topic, byte[] data) : base() {
-			Topic = topic;
-			Data = data;
-		}
-
-		public string Topic { get; }
-		public byte[] Data { get; }
-
-		public override string ToString() {
-			return "Topic: " + Topic + ", received: " + Data.ToText();
-		}
-	}
 }
