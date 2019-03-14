@@ -134,10 +134,11 @@ namespace Controllers.Lora
 
                     try
                     {
+                        var id = Guid.NewGuid().ToString();
                         var loraControllerFullInfo = FindLoraController(subObjectName, type, channel, number);
                         isLoraControllerFound = true;
                         Log.Log(
-                            "[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
+                            "[LORA ReceiveData] " + id + " > Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
                             loraControllerFullInfo.LoraControllerInfo.Name);
                         
                         var cmd = new InteleconAnyCommand(Guid.NewGuid().ToString(), commandCode, data);
@@ -150,35 +151,34 @@ namespace Controllers.Lora
                                     if (exc != null) throw exc;
                                     if (reply != null)
                                     {
-                                        Log.Log("-----------  Driver exc is null, sending reply back  -----------");
-                                        Log.Log("-----------  Reply.Code: " + reply.Code + "   Reply.Data: " + reply.Data.ToText());
+                                        Log.Log("[LORA ReceiveData] " + id + " > Driver exc is null, Reply.Code: " + reply.Code + "   Reply.Data: " + reply.Data.ToText());
                                         sendReplyAction((byte) reply.Code, reply.Data);
                                     }
                                     else
                                     {
-                                        Log.Log("-----------  ERROR IN PROGRAM: exc == null && reply == null!");
+                                        Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null && reply == null!");
                                         throw new Exception("Error in algorithm");
                                     }
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Log("-----------------------  При обработке ответа от объекта LORA возникло исключение: " + e);
+                                    Log.Log("[LORA ReceiveData] " + id + " > При обработке ответа от объекта LORA возникло исключение: " + e);
                                 }
                                 finally
                                 {
                                     notifyOperationComplete(); // выполняется в другом потоке
                                 }
                             });
-                        Log.Log("[OK] Command was pushed to command manager, timeout = 180 sec");
+                        Log.Log("[LORA ReceiveData] " + id + " > Command was pushed to command manager, timeout = 180 sec");
                     }
                     catch (AttachedControllerNotFoundException)
                     {
-                        Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
+                        Log.Log("[LORA ReceiveData] Such LORA controller was NOT FOUND in configs!");
                         //notifyOperationComplete();
                     }
                     catch (Exception ex)
                     {
-                        Log.Log(ex);
+                        Log.Log("[LORA ReceiveData] ERROR, ex: " + ex);
                     }
                 }
             }
