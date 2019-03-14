@@ -141,7 +141,7 @@ namespace Controllers.Lora
                             "[LORA ReceiveData] " + id + " > Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
                             loraControllerFullInfo.LoraControllerInfo.Name);
                         
-                        var cmd = new InteleconAnyCommand(Guid.NewGuid().ToString(), commandCode, data);
+                        var cmd = new InteleconAnyCommand(id, commandCode, data);
                         _commandManagerSystemSide.AcceptRequestCommandForSending(
                             loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal,
                             TimeSpan.FromSeconds(180), (exc, reply) =>
