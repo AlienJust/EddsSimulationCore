@@ -140,7 +140,7 @@ namespace Controllers.Lora
                             "[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
                             loraControllerFullInfo.LoraControllerInfo.Name);
                         
-                        var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
+                        var cmd = new InteleconAnyCommand(Guid.NewGuid().ToString(), commandCode, data);
                         _commandManagerSystemSide.AcceptRequestCommandForSending(
                             loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal,
                             TimeSpan.FromSeconds(180), (exc, reply) =>
@@ -150,14 +150,13 @@ namespace Controllers.Lora
                                     if (exc != null) throw exc;
                                     if (reply != null)
                                     {
-                                        Log.Log("-----------------------  Driver exc is null, sending reply back:");
-                                        Log.Log("-----------------------  Reply.Data: " + reply.Data.ToText());
-                                        Log.Log("-----------------------  Reply.Code: " + reply.Code);
+                                        Log.Log("-----------  Driver exc is null, sending reply back  -----------");
+                                        Log.Log("-----------  Reply.Code: " + reply.Code + "   Reply.Data: " + reply.Data.ToText());
                                         sendReplyAction((byte) reply.Code, reply.Data);
                                     }
                                     else
                                     {
-                                        Log.Log("-----------------------  ERROR IN PROGRAM: exc == null && reply == null!");
+                                        Log.Log("-----------  ERROR IN PROGRAM: exc == null && reply == null!");
                                         throw new Exception("Error in algorithm");
                                     }
                                 }
@@ -210,7 +209,7 @@ namespace Controllers.Lora
         {
             foreach (var loraControllerFullInfo in _loraControllers)
             {
-                Log.Log("Checking obj: " + loraControllerFullInfo.LoraControllerInfo.Name + " > " + loraControllerFullInfo.AttachedControllerConfig);
+                //Log.Log("Checking obj: " + loraControllerFullInfo.LoraControllerInfo.Name + " > " + loraControllerFullInfo.AttachedControllerConfig);
                 if (loraControllerFullInfo.AttachedControllerConfig.Gateway == gatewayName &&
                     loraControllerFullInfo.AttachedControllerConfig.Type == type &&
                     loraControllerFullInfo.AttachedControllerConfig.Channel == channel &&
