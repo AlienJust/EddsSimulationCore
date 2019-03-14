@@ -110,8 +110,12 @@ namespace Controllers.Lora
                                     var data = _lastSixsCache.GetData(loraObjectName, config);
                                     if (DateTime.Now - data.Item1 < TimeSpan.FromSeconds(loraControllerFullInfo.LoraControllerInfo.DataTtl))
                                     {
-                                        Log.Log("[MQTT DRIVER ACCEPT REQUEST] " + cmd.Identifier + " > Data in cache is good, sending it back as 6 reply, data: " + cmd.Data.Take(8).ToText());
-                                        _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(Guid.NewGuid().ToString(), 16, data.Item2));
+                                        var dataToSend = new List<byte>();
+                                        dataToSend.AddRange(cmd.Data.Take(8));
+                                        // Because cached header has different from request header.
+                                        dataToSend.AddRange(data.Item2.Skip(8));
+                                        Log.Log("[MQTT DRIVER ACCEPT REQUEST] " + cmd.Identifier + " > Data in cache is good, sending it back as 6 reply, data: " + dataToSend.ToText());
+                                        _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(Guid.NewGuid().ToString(), 16, dataToSend));
                                     }
                                     else
                                     {
