@@ -144,7 +144,7 @@ namespace Controllers.Lora
                         var cmd = new InteleconAnyCommand(id, commandCode, data);
                         _commandManagerSystemSide.AcceptRequestCommandForSending(
                             loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal,
-                            TimeSpan.FromSeconds(180), (exc, reply) =>
+                            TimeSpan.FromSeconds(300), (exc, reply) =>
                             {
                                 try
                                 {
