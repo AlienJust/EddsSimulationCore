@@ -151,7 +151,7 @@ namespace Controllers.Lora
                                     if (exc != null) throw exc;
                                     if (reply != null)
                                     {
-                                        Log.Log("[LORA ReceiveData] " + id + " > Driver exc is null, Reply.Code: " + reply.Code + "   Reply.Data: " + reply.Data.ToText());
+                                        Log.Log("[LORA ReceiveData] " + id + " > Driver exc is null, Reply.Code: " + reply.Code + " | Reply.Data: " + reply.Data.ToText());
                                         sendReplyAction((byte) reply.Code, reply.Data);
                                     }
                                     else
