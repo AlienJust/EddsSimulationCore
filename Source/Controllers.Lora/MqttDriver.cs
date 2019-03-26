@@ -45,8 +45,6 @@ namespace Controllers.Lora
         private readonly IList<LoraControllerFullInfo> _loraControllers;
         private readonly IChannelCommandManagerDriverSide<string> _commandManagerDriverSide;
 
-        private readonly AutoResetEvent _prevSubscribeIsComplete;
-
         private readonly IWorker<Action> _backWorker;
 
         public MqttDriver(string mqttBrokerHost, int tcpPort, IList<LoraControllerFullInfo> loraControllers, IChannelCommandManagerDriverSide<string> commandManagerDriverSide)
@@ -59,8 +57,6 @@ namespace Controllers.Lora
             _loraControllers = loraControllers;
             _commandManagerDriverSide = commandManagerDriverSide;
             _commandManagerDriverSide.CommandRequestAccepted += CommandManagerDriverSideOnCommandRequestAccepted;
-
-            _prevSubscribeIsComplete = new AutoResetEvent(false);
 
             _lastSixsCache = new AttachedLastDataCache();
 
@@ -103,13 +99,12 @@ namespace Controllers.Lora
 
                     foreach (var loraControllerInfo in _loraControllers)
                     {
-                        Log.Log("[MQTT DRIVER OnMqttMessageReceived] Subscribing for topic: " + loraControllerInfo.RxTopicName);
-                        Log.Log("[MQTT DRIVER OnMqttMessageReceived] Waiting for SubscribeAckMessage from MQTT broker...");
+                        Log.Log("[MQTT DRIVER Connected] Subscribing for topic: " + loraControllerInfo.RxTopicName);
+                        Log.Log("[MQTT DRIVER Connected] Waiting for SubscribeAckMessage from MQTT broker...");
 
                         await _client.SubscribeAsync(new TopicFilterBuilder().WithTopic(loraControllerInfo.RxTopicName).Build());
 
-                        _prevSubscribeIsComplete.WaitOne(TimeSpan.FromMinutes(0.5));
-                        Log.Log("[MQTT DRIVER OnMqttMessageReceived]Subscribed for topic" + loraControllerInfo.RxTopicName + " OK");
+                        Log.Log("[MQTT DRIVER Connected] Subscribed for topic" + loraControllerInfo.RxTopicName + " OK");
                     }
 
 
