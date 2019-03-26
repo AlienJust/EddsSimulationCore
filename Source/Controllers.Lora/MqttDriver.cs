@@ -45,13 +45,8 @@ namespace Controllers.Lora
         private readonly IList<LoraControllerFullInfo> _loraControllers;
         private readonly IChannelCommandManagerDriverSide<string> _commandManagerDriverSide;
 
-        private readonly IWorker<Action> _backWorker;
-
         public MqttDriver(string mqttBrokerHost, int tcpPort, IList<LoraControllerFullInfo> loraControllers, IChannelCommandManagerDriverSide<string> commandManagerDriverSide)
         {
-            var adapterFactory = new MqttClientAdapterFactory();
-            var logger = new MqttNetLogger("MqttDriver");
-
             _mqttBrokerHost = mqttBrokerHost;
             _tcpPort = tcpPort;
             _loraControllers = loraControllers;
@@ -60,20 +55,20 @@ namespace Controllers.Lora
 
             _lastSixsCache = new AttachedLastDataCache();
 
-            _backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("MqttDrv_Bw", a => a(), ThreadPriority.BelowNormal, true, null);
-
-            RunAsync().Wait();
-
             var subscriptionList = loraControllers.GroupBy(lc => lc.RxTopicName).Select(g=>g.Key);
             
             var topicFilters = new List<TopicFilter>();
             foreach (var topicName in subscriptionList)
             {
+                Log.Log("[MQTT DRIVER] .ctor topic name to subscribe added: " + topicName);
                 var tfb = new TopicFilterBuilder();
                 tfb.WithTopic(topicName);
                 topicFilters.Add(tfb.Build());
             }
             _topicFilters = topicFilters;
+            Log.Log("[MQTT DRIVER] .ctor topics to subscribe to generated, count = " + _topicFilters.Count);
+            
+            RunAsync().Wait();
             
             Log.Log("[MQTT DRIVER] .ctor complete");
         }
