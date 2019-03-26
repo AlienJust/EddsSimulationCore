@@ -63,6 +63,17 @@ namespace Controllers.Lora
             _backWorker = new SingleThreadedRelayQueueWorkerProceedAllItemsBeforeStopNoLog<Action>("MqttDrv_Bw", a => a(), ThreadPriority.BelowNormal, true, null);
 
             RunAsync().Wait();
+
+            var subscriptionList = loraControllers.GroupBy(lc => lc.RxTopicName).Select(g=>g.Key);
+            
+            var topicFilters = new List<TopicFilter>();
+            foreach (var topicName in subscriptionList)
+            {
+                var tfb = new TopicFilterBuilder();
+                tfb.WithTopic(topicName);
+                topicFilters.Add(tfb.Build());
+            }
+            _topicFilters = topicFilters;
             
             Log.Log("[MQTT DRIVER] .ctor complete");
         }
@@ -73,6 +84,7 @@ namespace Controllers.Lora
         }
 
         private IMqttClient _client;
+        private readonly IReadOnlyList<TopicFilter> _topicFilters;
 
         private async Task RunAsync()
         {
@@ -95,16 +107,14 @@ namespace Controllers.Lora
                 {
                     Log.Log("[MQTT DRIVER Connected] Connected with server");
 
-                    var tfb = new TopicFilterBuilder();
-                    foreach (var loraControllerInfo in _loraControllers)
+
+                    foreach (var topicFilter in _topicFilters)
                     {
-                        Log.Log("[MQTT DRIVER Connected] Subscribing for topic: " + loraControllerInfo.RxTopicName);
-                        tfb.WithTopic(loraControllerInfo.RxTopicName);
-                        
+                        Log.Log("[MQTT DRIVER Connected] Subscribing topic " + topicFilter.Topic);
+                        await _client.SubscribeAsync(topicFilter);
+                        Log.Log("[MQTT DRIVER Connected] SUBSCRIBED");
                     }
-                    Log.Log("[MQTT DRIVER Connected] All together");
-                    await _client.SubscribeAsync(tfb.Build());
-                    Log.Log("[MQTT DRIVER Connected] SUBSCRIBED");
+                    Log.Log("[MQTT DRIVER Connected] SUBSCRIBED all topics OK");
                 };
 
                 _client.Disconnected += async (s, e) =>
