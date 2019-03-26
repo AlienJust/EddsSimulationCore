@@ -2,10 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using AJ.Std.Concurrent;
-using AJ.Std.Concurrent.Contracts;
 using AJ.Std.Loggers;
 using AJ.Std.Loggers.Contracts;
 using AJ.Std.Text;
@@ -15,9 +12,6 @@ using Controllers.Gateway.Attached;
 using Controllers.Lora.JsonBrocaar;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Diagnostics;
-using MQTTnet.Implementations;
-//using MQTTnet.Protocol;
 using MQTTnet.Serializer;
 using Newtonsoft.Json;
 using PollSystem.CommandManagement.Channels;
@@ -378,14 +372,12 @@ namespace Controllers.Lora
                                     Log.Log(textData);
 
                                     var applicationMessage = new MqttApplicationMessageBuilder()
-                                        .WithTopic("A/B/C")
+                                        .WithTopic(loraControllerFullInfo.TxTopicName)
                                         .WithPayload(textData)
                                         .WithAtLeastOnceQoS()
                                         .Build();
 
                                     await _client.PublishAsync(applicationMessage);
-                                    //_mqttClient.Publish(loraControllerFullInfo.TxTopicName, Encoding.UTF8.GetBytes(textData), Qos.AtLeastOnce);
-
                                     Log.Log("[MQTT DRIVER ACCEPT REQUEST] " + cmd.Identifier + " > Data were published to MQTT topic");
                                 }
                             }
