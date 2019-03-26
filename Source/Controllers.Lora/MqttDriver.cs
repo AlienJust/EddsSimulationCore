@@ -78,15 +78,13 @@ namespace Controllers.Lora
         {
             try
             {
-                Log.Log("[MQTT DRIVER] Connecting to MQTT broker...");
-
                 var factory = new MqttFactory();
                 _client = factory.CreateMqttClient();
                 var clientOptions = new MqttClientOptions
                 {
                     ChannelOptions = new MqttClientTcpOptions
                     {
-                        Server = "127.0.0.1"
+                        Server = _mqttBrokerHost, Port = _tcpPort
                     },
                     ProtocolVersion = MqttProtocolVersion.V311
                 };
@@ -95,51 +93,51 @@ namespace Controllers.Lora
 
                 _client.Connected += async (s, e) =>
                 {
-                    Console.WriteLine("### CONNECTED WITH SERVER ###");
+                    Log.Log("[MQTT DRIVER Connected] Connected with server");
 
+                    var tfb = new TopicFilterBuilder();
                     foreach (var loraControllerInfo in _loraControllers)
                     {
                         Log.Log("[MQTT DRIVER Connected] Subscribing for topic: " + loraControllerInfo.RxTopicName);
-                        Log.Log("[MQTT DRIVER Connected] Waiting for SubscribeAckMessage from MQTT broker...");
-
-                        await _client.SubscribeAsync(new TopicFilterBuilder().WithTopic(loraControllerInfo.RxTopicName).Build());
-
-                        Log.Log("[MQTT DRIVER Connected] Subscribed for topic" + loraControllerInfo.RxTopicName + " OK");
+                        tfb.WithTopic(loraControllerInfo.RxTopicName);
+                        
                     }
-
-
-                    Console.WriteLine("### SUBSCRIBED ###");
+                    Log.Log("[MQTT DRIVER Connected] All together");
+                    await _client.SubscribeAsync(tfb.Build());
+                    Log.Log("[MQTT DRIVER Connected] SUBSCRIBED");
                 };
 
                 _client.Disconnected += async (s, e) =>
                 {
-                    Console.WriteLine("### DISCONNECTED FROM SERVER ###");
+                    Log.Log("[MQTT DRIVER DISCONNECTED]  FROM SERVER ###");
                     await Task.Delay(TimeSpan.FromSeconds(5));
 
                     try
                     {
+                        Log.Log("[MQTT DRIVER DISCONNECTED] Reconnecting to MQTT broker...");
                         await _client.ConnectAsync(clientOptions);
                     }
                     catch
                     {
-                        Console.WriteLine("### RECONNECTING FAILED ###");
+                        Log.Log("[MQTT DRIVER DISCONNECTED] RECONNECTING FAILED ###");
                     }
                 };
 
                 try
                 {
+                    Log.Log("[MQTT DRIVER] Connecting to MQTT broker...");
                     await _client.ConnectAsync(clientOptions);
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine("### CONNECTING FAILED ###" + Environment.NewLine + exception);
+                    Log.Log("[MQTT DRIVER] CONNECTING FAILED " + Environment.NewLine + exception);
                 }
 
-                Console.WriteLine("### WAITING FOR APPLICATION MESSAGES ###");
+                Log.Log("[MQTT DRIVER] WAITING FOR APPLICATION MESSAGES ###");
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                Log.Log("[MQTT DRIVER] " + exception);
             }
         }
 
