@@ -99,7 +99,9 @@ namespace Controllers.Lora
 
             if (_loraControllers.Count > 0)
             {
+                Log.Log("Starting MQTT driver...");
                 _mqttDriver = new MqttDriver(_mqttBrokerHost, _mqttBrokerPort, _loraControllers, commandManager);
+                Log.Log("MQTT driver has been started");
             }
 
             Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
