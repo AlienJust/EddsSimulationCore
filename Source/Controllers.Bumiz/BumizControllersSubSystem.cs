@@ -24,7 +24,7 @@ namespace Controllers.Bumiz {
 		private IBumizIoManager _bumizIoManager;
 
 		private ICompositionPart _scadaPollGatewayPart;
-		private IPollGateway _scadaPollGateway;
+		private IInteleconGateway _scadaInteleconGateway;
 
 		private ICompositionPart _pulseCountersDataStoragePart;
 		private IPulseCounterDataStorageHolder _pulseCountersDataStorage;
@@ -118,8 +118,8 @@ namespace Controllers.Bumiz {
 			_compositionRoot = root;
 
 			_scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-			_scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-			if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+			_scadaInteleconGateway = _scadaPollGatewayPart as IInteleconGateway;
+			if (_scadaInteleconGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
 			_scadaPollGatewayPart.AddRef();
 
 			_bumizIoManagerPart = _compositionRoot.GetPartByName("BumizIoSubSystem");

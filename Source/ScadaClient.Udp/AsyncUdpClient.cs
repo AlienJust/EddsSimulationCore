@@ -179,7 +179,8 @@ namespace ScadaClient.Udp
                                     rcvData[i] = data[i + 5];
                                 }
 
-                                Logg("Данные в формате Интелекон успешно получены, netAddr=" + netAddr + " cmdCode=" + cmdCode + " info=" + rcvData.ToText() + ", оповещаем подписчиков");
+                                Logg("Данные в формате Интелекон успешно получены, netAddr=" + netAddr + " cmdCode=" +
+                                     cmdCode + " info=" + rcvData.ToText() + ", оповещаем подписчиков");
                                 DataReceived.SafeInvoke(this, new DataReceivedEventArgs(netAddr, cmdCode, rcvData)); // Вызывается не в основном потоке!
                             }
                         }

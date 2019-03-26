@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AJ.Std.Composition;
 using AJ.Std.Composition.Contracts;
 using AJ.Std.Loggers;
@@ -11,7 +12,9 @@ using Audience;
 using Controllers.Gateway;
 using Controllers.Gateway.Attached;
 using PollServiceProxy.Contracts;
+using PollSystem.CommandManagement;
 using PollSystem.CommandManagement.Channels;
+using PollSystem.CommandManagement.Channels.Contracts;
 
 namespace Controllers.Lora
 {
@@ -21,7 +24,7 @@ namespace Controllers.Lora
 
 
         private ICompositionPart _scadaPollGatewayPart;
-        private IPollGateway _scadaPollGateway;
+        private IInteleconGateway _scadaInteleconGateway;
 
 
         private ICompositionPart _attachedControllersInfoSystemPart;
@@ -43,7 +46,7 @@ namespace Controllers.Lora
         private readonly string _mqttBrokerHost = "127.0.0.1"; // TODO: Move to config file
         private readonly int _mqttBrokerPort = 1883; // std port is 1883 TCP  // TODO: Move to config file
 
-        private IChannelCommandManagerSystemSide<string> _commandManagerSystemSide;
+        private IChannelCommandManagerSystemSide<string, IInteleconCommand> _commandManagerSystemSide;
 
         public LoraControllersSubSystem()
         {
@@ -68,15 +71,16 @@ namespace Controllers.Lora
 
 
             _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-            _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-            if (_scadaPollGateway == null)
+            _scadaInteleconGateway = _scadaPollGatewayPart as IInteleconGateway;
+            if (_scadaInteleconGateway == null)
                 throw new Exception("Не удалось найти PollGateWay через composition root");
             _scadaPollGatewayPart.AddRef();
-            _scadaPollGateway.RegisterSubSystem(this);
+            _scadaInteleconGateway.RegisterSubSystem(this);
 
 
-            var commandManager = new InteleconCommandManager<string>();
+            var commandManager = new InteleconCommandManager<string, IInteleconCommand>(new List<ICommandReplyArbiter<IInteleconCommand>> {new CommandReplyArbiterAttached()});
             _commandManagerSystemSide = commandManager;
+            _commandManagerSystemSide.ReplyWithoutRequestWasAccepted += CommandManagerSystemSideOnReplyWithoutRequestWasAccepted;
 
             Log.Log("Background worker Inited OK");
 
@@ -107,6 +111,12 @@ namespace Controllers.Lora
             Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
         }
 
+        private void CommandManagerSystemSideOnReplyWithoutRequestWasAccepted(object sender, InteleconReplyReceivedEventArgs<string, IInteleconCommand> e)
+        {
+            Log.Log("Received unexpected reply from driver for object: " + e.ObjectId);
+            Log.Log("Sending it to all scada systems via IInteleconGateway");
+            _scadaInteleconGateway.SendDataInstantly(e.ObjectId, (byte) e.Reply.Code, e.Reply.Data.ToArray());
+        }
 
         public void ReceiveData(
             string uplinkName,
@@ -142,15 +152,14 @@ namespace Controllers.Lora
                         Log.Log(
                             "[LORA ReceiveData] " + id + " > Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
                             loraControllerFullInfo.LoraControllerInfo.Name);
-                        
+
                         var cmd = new InteleconAnyCommand(id, commandCode, data);
                         _commandManagerSystemSide.AcceptRequestCommandForSending(
                             loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal,
-                            TimeSpan.FromSeconds(420), (exc, reply) =>
+                            TimeSpan.FromSeconds(420), reply =>
                             {
                                 try
                                 {
-                                    if (exc != null) throw exc;
                                     if (reply != null)
                                     {
                                         Log.Log("[LORA ReceiveData] " + id + " > Driver exc is null, Reply.Code: " + reply.Code + " | Reply.Data: " + reply.Data.ToText());
@@ -158,7 +167,7 @@ namespace Controllers.Lora
                                     }
                                     else
                                     {
-                                        Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null && reply == null!");
+                                        Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: reply == null!");
                                         throw new Exception("Error in algorithm");
                                     }
                                 }
@@ -170,13 +179,17 @@ namespace Controllers.Lora
                                 {
                                     notifyOperationComplete(); // выполняется в другом потоке
                                 }
+                            }, exc =>
+                            {
+                                if (exc != null) throw exc;
+                                Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null");
+                                throw new Exception("Error in algorithm");
                             });
                         Log.Log("[LORA ReceiveData] " + id + " > Command was pushed to command manager, timeout = 180 sec");
                     }
                     catch (AttachedControllerNotFoundException)
                     {
                         Log.Log("[LORA ReceiveData] Such LORA controller was NOT FOUND in configs!");
-                        //notifyOperationComplete();
                     }
                     catch (Exception ex)
                     {

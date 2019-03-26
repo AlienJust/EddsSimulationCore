@@ -20,7 +20,7 @@ namespace Controllers.Gateway {
 		private ICompositionRoot _compositionRoot;
 		private readonly IEnumerable<IGatewayControllerInfo> _gatewayControllerInfos;
 		private ICompositionPart _scadaPollGatewayPart;
-		private IPollGateway _scadaPollGateway;
+		private IInteleconGateway _scadaInteleconGateway;
 
 		public string SystemName => "Система шлюз-контроллеров";
 		public override string Name => "GatewayControllers";
@@ -85,10 +85,10 @@ namespace Controllers.Gateway {
 			}
 
 			_scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-			_scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-			if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+			_scadaInteleconGateway = _scadaPollGatewayPart as IInteleconGateway;
+			if (_scadaInteleconGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
 			_scadaPollGatewayPart.AddRef();
-			_scadaPollGateway.RegisterSubSystem(this);
+			_scadaInteleconGateway.RegisterSubSystem(this);
 		}
 
 		public IEnumerable<IGatewayControllerInfo> GatewayControllerInfos => _gatewayControllerInfos;
