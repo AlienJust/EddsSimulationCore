@@ -279,13 +279,13 @@ namespace Controllers.Lora
                                     {
                                         Log.Log("[MQTT DRIVER OnMqttMessageReceived] Config is less than 8 - saving data to cache AND notifying system about answer from MQTT channel");
                                         _lastSixsCache.AddData(loraController.LoraControllerInfo.Name, config, rcvData);
-                                        _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraController.LoraControllerInfo.Name, new InteleconAnyCommand(Guid.NewGuid().ToString(), cmdCode, rcvData));
+                                        _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraController.LoraControllerInfo.Name, new InteleconCommandBasic(Guid.NewGuid().ToString(), cmdCode, rcvData));
                                     }
                                     else
                                     {
                                         Log.Log("[MQTT DRIVER OnMqttMessageReceived] Config is greater or equals 8 - notifying system about answer from MQTT channel");
                                         // all the others commands works as normal
-                                        _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraController.LoraControllerInfo.Name, new InteleconAnyCommand(Guid.NewGuid().ToString(), cmdCode, rcvData));
+                                        _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraController.LoraControllerInfo.Name, new InteleconCommandBasic(Guid.NewGuid().ToString(), cmdCode, rcvData));
                                     }
 
                                     Log.Log("[MQTT DRIVER OnMqttMessageReceived] Trying to reaccept REQUEST (if any)");
@@ -355,12 +355,12 @@ namespace Controllers.Lora
                                             // Because cached header has different from request header.
                                             dataToSend.AddRange(data.Item2.Skip(8));
                                             Log.Log("[MQTT DRIVER ACCEPT REQUEST] " + cmd.Identifier + " > Data in cache is good, sending it back as 6 reply, data: " + dataToSend.ToText());
-                                            _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(Guid.NewGuid().ToString(), 16, dataToSend));
+                                            _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconCommandBasic(Guid.NewGuid().ToString(), 16, dataToSend));
                                         }
                                         else
                                         {
                                             Log.Log("[MQTT DRIVER ACCEPT REQUEST] " + cmd.Identifier + " > Data in cache too old, sending empty 6 reply with data: " + cmd.Data.Take(8).ToText());
-                                            _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(Guid.NewGuid().ToString(), 16, cmd.Data.Take(8).ToList()));
+                                            _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconCommandBasic(Guid.NewGuid().ToString(), 16, cmd.Data.Take(8).ToList()));
                                         }
                                     }
                                     // PUSH DATA TO MQTT TOPIC:
@@ -390,12 +390,12 @@ namespace Controllers.Lora
                                 catch (AttachedControllerNotFoundException)
                                 {
                                     Log.Log("[MQTT DRIVER ACCEPT REQUEST] Attached controller was not found! Replying empty package with data: " + cmd.Data.Take(8).ToText());
-                                    _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(Guid.NewGuid().ToString(), 16, cmd.Data.Take(8).ToList()));
+                                    _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconCommandBasic(Guid.NewGuid().ToString(), 16, cmd.Data.Take(8).ToList()));
                                 }
                                 catch (CannotGetDataFromCacheException)
                                 {
                                     Log.Log("[MQTT DRIVER ACCEPT REQUEST] No data in cache! Replying empty package with data: " + cmd.Data.Take(8).ToText());
-                                    _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconAnyCommand(Guid.NewGuid().ToString(), 16, cmd.Data.Take(8).ToList()));
+                                    _commandManagerDriverSide.ReceiveSomeReplyCommandFromDriver(loraObjectName, new InteleconCommandBasic(Guid.NewGuid().ToString(), 16, cmd.Data.Take(8).ToList()));
                                 }
                             }
                             else

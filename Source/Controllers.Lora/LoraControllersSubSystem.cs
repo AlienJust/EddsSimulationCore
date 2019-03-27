@@ -78,7 +78,7 @@ namespace Controllers.Lora
             _scadaInteleconGateway.RegisterSubSystem(this);
 
 
-            var commandManager = new InteleconCommandManager<string, IInteleconCommand>(new List<ICommandReplyArbiter<IInteleconCommand>> {new CommandReplyArbiterAttached()});
+            var commandManager = new InteleconCommandManager<string, IInteleconCommand>(new List<ICommandReplyArbiter<IInteleconCommand>> {new CommandReplyArbiterAttached()}, true);
             _commandManagerSystemSide = commandManager;
             _commandManagerSystemSide.ReplyWithoutRequestWasAccepted += CommandManagerSystemSideOnReplyWithoutRequestWasAccepted;
 
@@ -163,7 +163,7 @@ namespace Controllers.Lora
                             "[LORA ReceiveData] " + id + " > Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
                             loraControllerFullInfo.LoraControllerInfo.Name);
 
-                        var cmd = new InteleconAnyCommand(id, commandCode, data);
+                        var cmd = new InteleconCommandBasic(id, commandCode, data);
                         _commandManagerSystemSide.AcceptRequestCommandForSending(
                             loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal,
                             TimeSpan.FromSeconds(420), reply =>
