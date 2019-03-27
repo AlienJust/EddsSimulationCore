@@ -117,7 +117,9 @@ namespace Controllers.Lora
             Log.Log("Sending it to all scada systems via IInteleconGateway");
             try
             {
-                _scadaInteleconGateway.SendDataInstantly(e.ObjectId, (byte) e.Reply.Code, e.Reply.Data.ToArray());
+                var gatewayName = _loraControllers.First(lc => lc.LoraControllerInfo.Name == e.ObjectId).AttachedControllerConfig.Gateway;
+                Log.Log("Gateway name to send is " + gatewayName);
+                _scadaInteleconGateway.SendDataInstantly(gatewayName, (byte) e.Reply.Code, e.Reply.Data.ToArray());
                 Log.Log("Data was via IInteleconGateway");
             }
             catch (Exception exception)
