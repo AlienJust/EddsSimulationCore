@@ -13,7 +13,7 @@ namespace GatewayApp {
 		static void Main() {
 			var crs = new CrS();
 			crs.Parts.Add(new LoraControllersSubSystem());
-			crs.Parts.Add(new PollGateway());
+			crs.Parts.Add(new InteleconGateway());
 			crs.Parts.Add(new GatewayControllersSubSystem());
 			crs.Parts.Add(new VirtualControllersSystem());
 			crs.Parts.Add(new AttachedControllersInfoSystem());

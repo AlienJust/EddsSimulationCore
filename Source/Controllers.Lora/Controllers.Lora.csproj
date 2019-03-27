@@ -13,6 +13,7 @@
     <OutputPath>..\Debug</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MQTTnet" Version="2.8.5" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
   <ItemGroup>
@@ -21,7 +22,6 @@
     <ProjectReference Include="..\Controllers.Contracts\Controllers.Contracts.csproj" />
     <ProjectReference Include="..\Controllers.Gateway.Attached\Controllers.Gateway.Attached.csproj" />
     <ProjectReference Include="..\Controllers.Gateway\Controllers.Gateway.csproj" />
-    <ProjectReference Include="..\nMqtt\nMqtt.csproj" />
     <ProjectReference Include="..\PollServiceProxy.Contracts\PollServiceProxy.Contracts.csproj" />
   </ItemGroup>
   <ItemGroup>

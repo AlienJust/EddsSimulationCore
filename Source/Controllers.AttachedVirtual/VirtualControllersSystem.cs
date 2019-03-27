@@ -12,7 +12,7 @@ namespace Controllers.AttachedVirtual {
     private ICompositionRoot _compositionRoot;
 
     private ICompositionPart _scadaPollGatewayPart;
-    private IPollGateway _scadaPollGateway;
+    private IInteleconGateway _scadaInteleconGateway;
 
     private readonly bool _isDataProcessingEnabled = false;
 
@@ -20,8 +20,8 @@ namespace Controllers.AttachedVirtual {
       _compositionRoot = root;
 
       _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-      _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-      if (_scadaPollGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
+      _scadaInteleconGateway = _scadaPollGatewayPart as IInteleconGateway;
+      if (_scadaInteleconGateway == null) throw new Exception("Не удалось найти PollGateWay через composition root");
       _scadaPollGatewayPart.AddRef();
     }
 

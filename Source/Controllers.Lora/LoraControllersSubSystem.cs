@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using AJ.Std.Composition;
 using AJ.Std.Composition.Contracts;
 using AJ.Std.Loggers;
@@ -11,7 +12,9 @@ using Audience;
 using Controllers.Gateway;
 using Controllers.Gateway.Attached;
 using PollServiceProxy.Contracts;
+using PollSystem.CommandManagement;
 using PollSystem.CommandManagement.Channels;
+using PollSystem.CommandManagement.Channels.Contracts;
 
 namespace Controllers.Lora
 {
@@ -21,7 +24,7 @@ namespace Controllers.Lora
 
 
         private ICompositionPart _scadaPollGatewayPart;
-        private IPollGateway _scadaPollGateway;
+        private IInteleconGateway _scadaInteleconGateway;
 
 
         private ICompositionPart _attachedControllersInfoSystemPart;
@@ -43,7 +46,7 @@ namespace Controllers.Lora
         private readonly string _mqttBrokerHost = "127.0.0.1"; // TODO: Move to config file
         private readonly int _mqttBrokerPort = 1883; // std port is 1883 TCP  // TODO: Move to config file
 
-        private IChannelCommandManagerSystemSide<string> _commandManagerSystemSide;
+        private IChannelCommandManagerSystemSide<string, IInteleconCommand> _commandManagerSystemSide;
 
         public LoraControllersSubSystem()
         {
@@ -68,15 +71,16 @@ namespace Controllers.Lora
 
 
             _scadaPollGatewayPart = _compositionRoot.GetPartByName("PollGateWay");
-            _scadaPollGateway = _scadaPollGatewayPart as IPollGateway;
-            if (_scadaPollGateway == null)
+            _scadaInteleconGateway = _scadaPollGatewayPart as IInteleconGateway;
+            if (_scadaInteleconGateway == null)
                 throw new Exception("Не удалось найти PollGateWay через composition root");
             _scadaPollGatewayPart.AddRef();
-            _scadaPollGateway.RegisterSubSystem(this);
+            _scadaInteleconGateway.RegisterSubSystem(this);
 
 
-            var commandManager = new InteleconCommandManager<string>();
+            var commandManager = new InteleconCommandManager<string, IInteleconCommand>(new List<ICommandReplyArbiter<IInteleconCommand>> {new CommandReplyArbiterAttached()}, true);
             _commandManagerSystemSide = commandManager;
+            _commandManagerSystemSide.ReplyWithoutRequestWasAccepted += CommandManagerSystemSideOnReplyWithoutRequestWasAccepted;
 
             Log.Log("Background worker Inited OK");
 
@@ -99,12 +103,30 @@ namespace Controllers.Lora
 
             if (_loraControllers.Count > 0)
             {
+                Log.Log("Starting MQTT driver...");
                 _mqttDriver = new MqttDriver(_mqttBrokerHost, _mqttBrokerPort, _loraControllers, commandManager);
+                Log.Log("MQTT driver has been started");
             }
 
             Log.Log("Lora controllers subsystem was loaded! Built _loraControllers count = " + _loraControllers.Count);
         }
 
+        private void CommandManagerSystemSideOnReplyWithoutRequestWasAccepted(object sender, InteleconReplyReceivedEventArgs<string, IInteleconCommand> e)
+        {
+            Log.Log("Received unexpected reply from driver for object: " + e.ObjectId + ", cmdCode=" + e.Reply.Code + " data=" + e.Reply.Data.ToText());
+            Log.Log("Sending it to all scada systems via IInteleconGateway");
+            try
+            {
+                var gatewayName = _loraControllers.First(lc => lc.LoraControllerInfo.Name == e.ObjectId).AttachedControllerConfig.Gateway;
+                Log.Log("Gateway name to send is " + gatewayName);
+                _scadaInteleconGateway.SendDataInstantly(gatewayName, (byte) e.Reply.Code, e.Reply.Data.ToArray());
+                Log.Log("Data was via IInteleconGateway");
+            }
+            catch (Exception exception)
+            {
+                Log.Log("Some exception while sending data via IInteleconGateway: " + exception);
+            }
+        }
 
         public void ReceiveData(
             string uplinkName,
@@ -134,52 +156,66 @@ namespace Controllers.Lora
 
                     try
                     {
+                        var id = Guid.NewGuid().ToString();
                         var loraControllerFullInfo = FindLoraController(subObjectName, type, channel, number);
                         isLoraControllerFound = true;
                         Log.Log(
-                            "[OK] - Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
+                            "[LORA ReceiveData] " + id + " > Such LORA controller found in configs, generating command and pushing it to command manager, controller ID is: " +
                             loraControllerFullInfo.LoraControllerInfo.Name);
-                        
-                        var cmd = new InteleconAnyCommand(123, commandCode, data); // 123 is sample ID
+
+                        var cmd = new InteleconCommandBasic(id, commandCode, data);
                         _commandManagerSystemSide.AcceptRequestCommandForSending(
                             loraControllerFullInfo.LoraControllerInfo.Name, cmd, CommandPriority.Normal,
-                            TimeSpan.FromSeconds(180), (exc, reply) =>
+                            TimeSpan.FromSeconds(420), reply =>
                             {
                                 try
                                 {
-                                    if (exc != null) throw exc;
                                     if (reply != null)
                                     {
-                                        Log.Log("-----------------------  Driver exc is null, sending reply back:");
-                                        Log.Log("-----------------------  Reply.Data: " + reply.Data.ToText());
-                                        Log.Log("-----------------------  Reply.Code: " + reply.Code);
+                                        Log.Log("[LORA ReceiveData] " + id + " > Driver exc is null, Reply.Code: " + reply.Code + " | Reply.Data: " + reply.Data.ToText());
                                         sendReplyAction((byte) reply.Code, reply.Data);
                                     }
                                     else
                                     {
-                                        Log.Log("-----------------------  ERROR IN PROGRAM: exc == null && reply == null!");
+                                        Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: reply == null!");
                                         throw new Exception("Error in algorithm");
                                     }
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Log("-----------------------  При обработке ответа от объекта LORA возникло исключение: " + e);
+                                    Log.Log("[LORA ReceiveData] " + id + " > При обработке ответа от объекта LORA возникло исключение: " + e);
                                 }
                                 finally
                                 {
                                     notifyOperationComplete(); // выполняется в другом потоке
                                 }
+                            }, exc =>
+                            {
+                                try
+                                {
+                                    if (exc != null)
+                                    {
+                                        Log.Log("[LORA ReceiveData] " + id + " > ERROR FROM DRIVER: exc = " + exc);
+                                        throw exc;
+                                    }
+                                    Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null");
+                                    throw new Exception("Error in algorithm");
+                                }
+                                finally
+                                {
+                                    // Even on error need to notify operation is complete
+                                    notifyOperationComplete();
+                                }
                             });
-                        Log.Log("[OK] Command was pushed to command manager, timeout = 180 sec");
+                        Log.Log("[LORA ReceiveData] " + id + " > Command was pushed to command manager, timeout = 180 sec");
                     }
                     catch (AttachedControllerNotFoundException)
                     {
-                        Log.Log("[OK] Such LORA controller was NOT FOUND in configs!");
-                        //notifyOperationComplete();
+                        Log.Log("[LORA ReceiveData] Such LORA controller was NOT FOUND in configs!");
                     }
                     catch (Exception ex)
                     {
-                        Log.Log(ex);
+                        Log.Log("[LORA ReceiveData] ERROR, ex: " + ex);
                     }
                 }
             }
@@ -210,7 +246,7 @@ namespace Controllers.Lora
         {
             foreach (var loraControllerFullInfo in _loraControllers)
             {
-                Log.Log("Checking obj: " + loraControllerFullInfo.LoraControllerInfo.Name + " > " + loraControllerFullInfo.AttachedControllerConfig);
+                //Log.Log("Checking obj: " + loraControllerFullInfo.LoraControllerInfo.Name + " > " + loraControllerFullInfo.AttachedControllerConfig);
                 if (loraControllerFullInfo.AttachedControllerConfig.Gateway == gatewayName &&
                     loraControllerFullInfo.AttachedControllerConfig.Type == type &&
                     loraControllerFullInfo.AttachedControllerConfig.Channel == channel &&
