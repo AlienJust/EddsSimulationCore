@@ -126,7 +126,6 @@ namespace Controllers.Lora
             {
                 Log.Log("Some exception while sending data via IInteleconGateway: " + exception);
             }
-            
         }
 
         public void ReceiveData(
@@ -192,9 +191,17 @@ namespace Controllers.Lora
                                 }
                             }, exc =>
                             {
-                                if (exc != null) throw exc;
-                                Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null");
-                                throw new Exception("Error in algorithm");
+                                try
+                                {
+                                    if (exc != null) throw exc;
+                                    Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null");
+                                    throw new Exception("Error in algorithm");
+                                }
+                                finally
+                                {
+                                    // Even on error need to notify operation is complete
+                                    notifyOperationComplete();
+                                }
                             });
                         Log.Log("[LORA ReceiveData] " + id + " > Command was pushed to command manager, timeout = 180 sec");
                     }
