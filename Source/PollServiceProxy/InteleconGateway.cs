@@ -137,7 +137,7 @@ namespace PollServiceProxy
                                     }
 
                                     Log.Log("All internal systems were notified");
-                                    counter.WaitForCounterChangeWhileNotPredecate(c => c <= 0);
+                                    //counter.WaitForCounterChangeWhileNotPredecate(c => c <= 0);
                                     Log.Log("All internal systems reported back about notify");
                                 }
                             });
