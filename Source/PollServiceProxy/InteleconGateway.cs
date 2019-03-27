@@ -27,13 +27,17 @@ namespace PollServiceProxy
         private readonly Thread _microPacketSendThread;
         private readonly int _microPacketSendingIntervalMs;
         private ICompositionRoot _compositionRoot;
+
         private readonly Dictionary<IScadaAddress, IWorker<Action>> _perScadaAddressWorkers;
-        private readonly Dictionary<IScadaAddress, object> _perScadaAddressSendMicroPacketsSyncObjs;
+
+        //private readonly Dictionary<IScadaAddress, WaitableCounter> _perScadaAddressSendMicroPacketsSyncObjs;
+        private WaitableMultiCounter<IScadaAddress> _perScadaAddressSendMicroPacketsSyncObjs;
 
         public InteleconGateway()
         {
             _perScadaAddressWorkers = new Dictionary<IScadaAddress, IWorker<Action>>();
-            _perScadaAddressSendMicroPacketsSyncObjs = new Dictionary<IScadaAddress, object>();
+            //_perScadaAddressSendMicroPacketsSyncObjs = new Dictionary<IScadaAddress, object>();
+            _perScadaAddressSendMicroPacketsSyncObjs = new WaitableMultiCounter<IScadaAddress>();
 
             _internalSystems = new List<ISubSystem>();
 
@@ -70,7 +74,7 @@ namespace PollServiceProxy
                                 Log.Log(exception);
                             }
                         }, ThreadPriority.BelowNormal, true, null));
-                        _perScadaAddressSendMicroPacketsSyncObjs.Add(scadaAddress, new object());
+                        //_perScadaAddressSendMicroPacketsSyncObjs.Add(scadaAddress, new object());
                     }
                 }
 
@@ -111,35 +115,32 @@ namespace PollServiceProxy
                             Log.Log("Object with address " + objectScadaAddress + " was found, need to notify subsystem");
                             _perScadaAddressWorkers[objectScadaAddress].AddWork(() =>
                             {
-                                // Locking for preventing micropackets sending.
-                                lock (_perScadaAddressSendMicroPacketsSyncObjs[objectScadaAddress])
+                                // Increasing counter to prevent micropackets sending.
+                                foreach (var internalSystem in _internalSystems)
                                 {
-                                    //var counter = new WaitableCounter(0);
-                                    foreach (var internalSystem in _internalSystems)
+                                    try
                                     {
-                                        try
-                                        {
-                                            Log.Log("Notifying internal system " + internalSystem.SystemName);
-                                            //counter.IncrementCount();
+                                        _perScadaAddressSendMicroPacketsSyncObjs.IncrementCount(objectScadaAddress);
+                                        Log.Log("Notifying internal ISubSystem with name = " + internalSystem.SystemName);
 
-                                            internalSystem.ReceiveData(scadaClient.Name, scadaObjectName,
-                                                eventArgs.CommandCode, eventArgs.Data, /*counter.DecrementCount*/() => { },
-                                                (code, reply) => SendReplyData(scadaClient.Name, scadaObjectNetAddress,
-                                                    (byte) code, reply.ToArray()));
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Log.Log("Something wrong during internal systems notification: " + ex);
-
-                                            // Decrementing on any exception to prevent forever waiting
-                                            //counter.DecrementCount();
-                                        }
+                                        internalSystem.ReceiveData(scadaClient.Name, scadaObjectName,
+                                            eventArgs.CommandCode, eventArgs.Data,
+                                            () => _perScadaAddressSendMicroPacketsSyncObjs.DecrementCount(
+                                                objectScadaAddress),
+                                            (code, reply) => SendReplyData(scadaClient.Name, scadaObjectNetAddress,
+                                                (byte) code, reply.ToArray()));
                                     }
-
-                                    Log.Log("All internal systems were notified");
-                                    //counter.WaitForCounterChangeWhileNotPredecate(c => c <= 0);
-                                    Log.Log("All internal systems reported back about notify");
+                                    catch (Exception ex)
+                                    {
+                                        Log.Log("Something wrong during internal systems notification: " + ex);
+                                        // Decrementing on any exception to prevent forever waiting
+                                        _perScadaAddressSendMicroPacketsSyncObjs.DecrementCount(objectScadaAddress);
+                                    }
                                 }
+
+                                Log.Log("All internal systems were notified");
+                                //counter.WaitForCounterChangeWhileNotPredecate(c => c <= 0);
+                                //Log.Log("All internal systems reported back about notify");
                             });
                             break;
                         }
@@ -163,7 +164,9 @@ namespace PollServiceProxy
                     {
                         foreach (var target in obj.Value.ScadaAddresses)
                         {
-                            lock (_perScadaAddressSendMicroPacketsSyncObjs[target])
+                            var internalSubSystemsWorkingWithObjectCount = _perScadaAddressSendMicroPacketsSyncObjs.GetCount(target);
+                            //lock (_perScadaAddressSendMicroPacketsSyncObjs[target])
+                            if (internalSubSystemsWorkingWithObjectCount <= 0)
                             {
                                 try
                                 {
@@ -175,6 +178,12 @@ namespace PollServiceProxy
                                     Log.Log("Exception on sending micropacket: " + ex);
                                     Log.Log(ex.ToString());
                                 }
+                            }
+                            else
+                            {
+                                Log.Log("Micropacket was not sent to " + target.LinkName +
+                                        " because count of subsystems working with object is " +
+                                        internalSubSystemsWorkingWithObjectCount);
                             }
                         }
                     }
