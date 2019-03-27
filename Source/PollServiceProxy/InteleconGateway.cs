@@ -180,7 +180,7 @@ namespace PollServiceProxy
                     }
                 }
 
-                Log.Log("Micropackets was sended, count: " + sendsCount);
+                Log.Log("Micropackets was sended, count = " + sendsCount);
                 Thread.Sleep(_microPacketSendingIntervalMs);
             }
         }
@@ -188,9 +188,11 @@ namespace PollServiceProxy
         public void SendDataInstantly(string scadaObjectName, byte commandCode, byte[] data)
         {
             var scadaObjectInfo = _scadaObjects[scadaObjectName];
+            Log.Log("Sending instant reply for object " + scadaObjectName + ", command code = " + commandCode + " data = " + data.ToText());
             foreach (var scadaAddress in scadaObjectInfo.ScadaAddresses)
             {
                 _perScadaAddressWorkers[scadaAddress].AddWork(() => SendReplyData(scadaAddress.LinkName, (ushort) scadaAddress.NetAddress, commandCode, data));
+                Log.Log("Sended reply to SCADA system " + scadaAddress.LinkName + " as Intelecon Network Address=" + scadaAddress.NetAddress);
             }
         }
 
