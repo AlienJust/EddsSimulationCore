@@ -197,7 +197,7 @@ namespace PollServiceProxy
         public void SendDataInstantly(string scadaObjectName, byte commandCode, byte[] data)
         {
             var scadaObjectInfo = _scadaObjects[scadaObjectName];
-            Log.Log("Sending instant reply for object " + scadaObjectName + ", command code = " + commandCode + " data = " + data.ToText());
+            Log.Log("Sending INSTANTLY reply for object " + scadaObjectName + ", command code = " + commandCode + " data = " + data.ToText());
             foreach (var scadaAddress in scadaObjectInfo.ScadaAddresses)
             {
                 _perScadaAddressWorkers[scadaAddress].AddWork(() => SendReplyData(scadaAddress.LinkName, (ushort) scadaAddress.NetAddress, commandCode, data));

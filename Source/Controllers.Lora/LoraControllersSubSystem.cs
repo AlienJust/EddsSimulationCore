@@ -113,9 +113,18 @@ namespace Controllers.Lora
 
         private void CommandManagerSystemSideOnReplyWithoutRequestWasAccepted(object sender, InteleconReplyReceivedEventArgs<string, IInteleconCommand> e)
         {
-            Log.Log("Received unexpected reply from driver for object: " + e.ObjectId);
+            Log.Log("Received unexpected reply from driver for object: " + e.ObjectId + ", cmdCode=" + e.Reply.Code + " data=" + e.Reply.Data.ToText());
             Log.Log("Sending it to all scada systems via IInteleconGateway");
-            _scadaInteleconGateway.SendDataInstantly(e.ObjectId, (byte) e.Reply.Code, e.Reply.Data.ToArray());
+            try
+            {
+                _scadaInteleconGateway.SendDataInstantly(e.ObjectId, (byte) e.Reply.Code, e.Reply.Data.ToArray());
+                Log.Log("Data was via IInteleconGateway");
+            }
+            catch (Exception exception)
+            {
+                Log.Log("Some exception while sending data via IInteleconGateway: " + exception);
+            }
+            
         }
 
         public void ReceiveData(
