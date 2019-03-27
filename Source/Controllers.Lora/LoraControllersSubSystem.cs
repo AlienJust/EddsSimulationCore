@@ -193,7 +193,11 @@ namespace Controllers.Lora
                             {
                                 try
                                 {
-                                    if (exc != null) throw exc;
+                                    if (exc != null)
+                                    {
+                                        Log.Log("[LORA ReceiveData] " + id + " > ERROR FROM DRIVER: exc = " + exc);
+                                        throw exc;
+                                    }
                                     Log.Log("[LORA ReceiveData] " + id + " > ERROR IN PROGRAM: exc == null");
                                     throw new Exception("Error in algorithm");
                                 }
