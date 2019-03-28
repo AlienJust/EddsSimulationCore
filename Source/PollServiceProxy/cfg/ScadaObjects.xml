@@ -8,14 +8,17 @@
 
 	<Object Name="gate2" SendMicroPackets="True">
 		<Targets>
-			<!--<UdpScadaLink Label="LocalScada" Address="2000"/>-->
-			<UdpScadaLink Label="Localhost1" Address="2000"/>
-			<UdpScadaLink Label="Localhost" Address="2000"/>
+			<UdpScadaLink Label="LocalScada" Address="2000"/>
+			<UdpScadaLink Label="AjHomeScada" Address="2000"/>
+			<!--<UdpScadaLink Label="Localhost1" Address="2000"/>-->
+			<!--<UdpScadaLink Label="Localhost" Address="2000"/>-->
 		</Targets>
 	</Object>
-	<Object Name="gate2001" SendMicroPackets="True">
+	<Object Name="gate4000" SendMicroPackets="True">
 		<Targets>
-			<UdpScadaLink Label="Localhost" Address="2001"/>
+			<UdpScadaLink Label="LocalScada" Address="4000"/>
+			<UdpScadaLink Label="AjHomeScada" Address="4000"/>
+			<!--<UdpScadaLink Label="Localhost" Address="4000"/>-->
 		</Targets>
 	</Object>
 	<!--<Object Name="gate222" SendMicroPackets="True">

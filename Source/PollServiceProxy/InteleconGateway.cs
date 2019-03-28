@@ -189,7 +189,7 @@ namespace PollServiceProxy
                     }
                 }
 
-                Log.Log("Micropackets was sended, count = " + sendsCount);
+                Log.Log("Micropackets were sent, count=" + sendsCount);
                 Thread.Sleep(_microPacketSendingIntervalMs);
             }
         }
