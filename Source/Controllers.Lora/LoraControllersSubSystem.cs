@@ -207,7 +207,7 @@ namespace Controllers.Lora
                                     notifyOperationComplete();
                                 }
                             });
-                        Log.Log("[LORA ReceiveData] " + id + " > Command was pushed to command manager, timeout = 180 sec");
+                        Log.Log("[LORA ReceiveData] " + id + " > Command was pushed to command manager, timeout = 420 sec");
                     }
                     catch (AttachedControllerNotFoundException)
                     {
