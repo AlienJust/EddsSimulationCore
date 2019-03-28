@@ -172,6 +172,7 @@ namespace PollServiceProxy
                                 {
                                     _scadaClients[target.LinkName].Link.SendMicroPacket((ushort) target.NetAddress, 22);
                                     sendsCount++;
+                                    Log.Log("Micropacket was sent to " + target.LinkName + " NetAddr=" + target.NetAddress);
                                 }
                                 catch (Exception ex)
                                 {
