@@ -42,5 +42,19 @@
 	<AttachedControllerInfo Gateway="gate2" Channel="3" Type="49" Number="0" Name="lora-003-meta"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="3" Type="51" Number="0" Name="lora-003-self"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="3" Type="50" Number="1" Name="lora-003-psch-01"/>
+
+	
+	
+	<AttachedControllerInfo Gateway="gate2" Channel="11" Type="49" Number="0" Name="lora-011-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="11" Type="51" Number="0" Name="lora-011-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="11" Type="53" Number="1" Name="lora-011-se301-01"/>1
+
+	<AttachedControllerInfo Gateway="gate2" Channel="12" Type="49" Number="0" Name="lora-012-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="12" Type="51" Number="0" Name="lora-012-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="12" Type="53" Number="1" Name="lora-012-se301-01"/>
+
+	<AttachedControllerInfo Gateway="gate2" Channel="13" Type="49" Number="0" Name="lora-013-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="13" Type="51" Number="0" Name="lora-013-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="13" Type="53" Number="1" Name="lora-013-se301-01"/>
 	
 </AttachedControllerInfos>
