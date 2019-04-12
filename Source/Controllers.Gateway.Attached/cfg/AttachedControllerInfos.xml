@@ -56,5 +56,25 @@
 	<AttachedControllerInfo Gateway="gate2" Channel="13" Type="49" Number="0" Name="lora-013-meta"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="13" Type="51" Number="0" Name="lora-013-self"/>
 	<AttachedControllerInfo Gateway="gate2" Channel="13" Type="53" Number="1" Name="lora-013-se301-01"/>
-	
+
+	<AttachedControllerInfo Gateway="gate2" Channel="14" Type="49" Number="0" Name="lora-014-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="14" Type="51" Number="0" Name="lora-014-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="15" Type="49" Number="0" Name="lora-015-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="15" Type="51" Number="0" Name="lora-015-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="16" Type="49" Number="0" Name="lora-016-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="16" Type="51" Number="0" Name="lora-016-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="17" Type="49" Number="0" Name="lora-017-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="17" Type="51" Number="0" Name="lora-017-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="18" Type="49" Number="0" Name="lora-018-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="18" Type="51" Number="0" Name="lora-018-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="19" Type="49" Number="0" Name="lora-019-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="19" Type="51" Number="0" Name="lora-019-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="20" Type="49" Number="0" Name="lora-020-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="20" Type="51" Number="0" Name="lora-020-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="21" Type="49" Number="0" Name="lora-021-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="21" Type="51" Number="0" Name="lora-021-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="22" Type="49" Number="0" Name="lora-022-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="22" Type="51" Number="0" Name="lora-022-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="23" Type="49" Number="0" Name="lora-023-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="23" Type="51" Number="0" Name="lora-023-self"/>
 </AttachedControllerInfos>
