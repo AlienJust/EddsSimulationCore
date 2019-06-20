@@ -1,93 +1,103 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <LoraObjects>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-metadata-100"/>
-	<!--<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-counter-100"/>-->
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-self-100"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-sdv-100"/>
-	<!--<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-se301-100"/>-->
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-metadata-100"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-self-100"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000064" InteleconNetAddress="2000" Name="lora-sdv-100"/>
 
-	<!--<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c9" InteleconNetAddress="2000" Name="lora-metadata-101"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c9" InteleconNetAddress="2000" Name="lora-counter-101"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c9" InteleconNetAddress="2000" Name="lora-self-101"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c9" InteleconNetAddress="2000" Name="lora-sdv-101"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000c9" InteleconNetAddress="2000" Name="lora-se301-101"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-metadata-104"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-counter-104"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-self-104"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-sdv-104"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-se301-104-1"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-se301-104-2"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000ca" InteleconNetAddress="2000" Name="lora-metadata-102"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000ca" InteleconNetAddress="2000" Name="lora-counter-102"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000ca" InteleconNetAddress="2000" Name="lora-self-102"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000ca" InteleconNetAddress="2000" Name="lora-sdv-102"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000ca" InteleconNetAddress="2000" Name="lora-se301-102"/>
-	
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cb" InteleconNetAddress="2000" Name="lora-metadata-103"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cb" InteleconNetAddress="2000" Name="lora-counter-103"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cb" InteleconNetAddress="2000" Name="lora-self-103"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cb" InteleconNetAddress="2000" Name="lora-sdv-103"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cb" InteleconNetAddress="2000" Name="lora-se301-103"/>-->
-	
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-metadata-104"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-counter-104"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-self-104"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-sdv-104"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-se301-104-1"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="be7a0000000000cc" InteleconNetAddress="2000" Name="lora-se301-104-2"/>
-
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="lora-001-meta"/>
+  <!--	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="lora-001-meta"/>
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="lora-001-self"/>
 	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="lora-001-psch-01"/>
+-->
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-psch-01"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-self"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-psch-01"/>
-
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000003" InteleconNetAddress="2000" Name="lora-003-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000003" InteleconNetAddress="2000" Name="lora-003-self"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000003" InteleconNetAddress="2000" Name="lora-003-psch-01"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000003" InteleconNetAddress="2000" Name="lora-003-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000003" InteleconNetAddress="2000" Name="lora-003-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000003" InteleconNetAddress="2000" Name="lora-003-psch-01"/>
 
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000b" InteleconNetAddress="2000" Name="lora-011-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000b" InteleconNetAddress="2000" Name="lora-011-self"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000b" InteleconNetAddress="2000" Name="lora-011-se301-01"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000001" InteleconNetAddress="2000" Name="artm-001-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000001" InteleconNetAddress="2000" Name="artm-001-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000001" InteleconNetAddress="2000" Name="artm-001-sdv"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000c" InteleconNetAddress="2000" Name="lora-012-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000c" InteleconNetAddress="2000" Name="lora-012-self"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000c" InteleconNetAddress="2000" Name="lora-012-se301-01"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000b" InteleconNetAddress="2000" Name="lora-011-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000b" InteleconNetAddress="2000" Name="lora-011-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000b" InteleconNetAddress="2000" Name="lora-011-se301-01"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000d" InteleconNetAddress="2000" Name="lora-013-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000d" InteleconNetAddress="2000" Name="lora-013-self"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000d" InteleconNetAddress="2000" Name="lora-013-se301-01"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000c" InteleconNetAddress="2000" Name="lora-012-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000c" InteleconNetAddress="2000" Name="lora-012-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000c" InteleconNetAddress="2000" Name="lora-012-se301-01"/>
 
-	
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000e" InteleconNetAddress="2000" Name="lora-014-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000e" InteleconNetAddress="2000" Name="lora-014-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000d" InteleconNetAddress="2000" Name="lora-013-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000d" InteleconNetAddress="2000" Name="lora-013-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000d" InteleconNetAddress="2000" Name="lora-013-se301-01"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000f" InteleconNetAddress="2000" Name="lora-015-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000f" InteleconNetAddress="2000" Name="lora-015-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000010" InteleconNetAddress="2000" Name="lora-016-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000010" InteleconNetAddress="2000" Name="lora-016-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000e" InteleconNetAddress="2000" Name="lora-014-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000e" InteleconNetAddress="2000" Name="lora-014-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000011" InteleconNetAddress="2000" Name="lora-017-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000011" InteleconNetAddress="2000" Name="lora-017-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000f" InteleconNetAddress="2000" Name="lora-015-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000000f" InteleconNetAddress="2000" Name="lora-015-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000012" InteleconNetAddress="2000" Name="lora-018-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000012" InteleconNetAddress="2000" Name="lora-018-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000010" InteleconNetAddress="2000" Name="lora-016-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000010" InteleconNetAddress="2000" Name="lora-016-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000013" InteleconNetAddress="2000" Name="lora-019-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000013" InteleconNetAddress="2000" Name="lora-019-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000011" InteleconNetAddress="2000" Name="lora-017-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000011" InteleconNetAddress="2000" Name="lora-017-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000014" InteleconNetAddress="2000" Name="lora-020-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000014" InteleconNetAddress="2000" Name="lora-020-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000012" InteleconNetAddress="2000" Name="lora-018-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000012" InteleconNetAddress="2000" Name="lora-018-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000015" InteleconNetAddress="2000" Name="lora-020-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000015" InteleconNetAddress="2000" Name="lora-020-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000013" InteleconNetAddress="2000" Name="lora-019-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000013" InteleconNetAddress="2000" Name="lora-019-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000016" InteleconNetAddress="2000" Name="lora-021-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000016" InteleconNetAddress="2000" Name="lora-021-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000014" InteleconNetAddress="2000" Name="lora-020-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000014" InteleconNetAddress="2000" Name="lora-020-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000017" InteleconNetAddress="2000" Name="lora-022-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000017" InteleconNetAddress="2000" Name="lora-022-self"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000015" InteleconNetAddress="2000" Name="lora-021-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000015" InteleconNetAddress="2000" Name="lora-021-self"/>
 
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000018" InteleconNetAddress="2000" Name="lora-023-meta"/>
-	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000018" InteleconNetAddress="2000" Name="lora-023-self"/>
-	
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000016" InteleconNetAddress="2000" Name="lora-022-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000016" InteleconNetAddress="2000" Name="lora-022-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000017" InteleconNetAddress="2000" Name="lora-023-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000017" InteleconNetAddress="2000" Name="lora-023-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000018" InteleconNetAddress="2000" Name="lora-024-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000018" InteleconNetAddress="2000" Name="lora-024-self"/>
+  
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000019" InteleconNetAddress="2000" Name="lora-025-meta"/>
+	<LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000019" InteleconNetAddress="2000" Name="lora-025-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001a" InteleconNetAddress="2000" Name="lora-026-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001a" InteleconNetAddress="2000" Name="lora-026-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001b" InteleconNetAddress="2000" Name="lora-027-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001b" InteleconNetAddress="2000" Name="lora-027-self"/>
+  
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001c" InteleconNetAddress="2000" Name="lora-028-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001c" InteleconNetAddress="2000" Name="lora-028-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001d" InteleconNetAddress="2000" Name="lora-029-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001d" InteleconNetAddress="2000" Name="lora-029-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001e" InteleconNetAddress="2000" Name="lora-030-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001e" InteleconNetAddress="2000" Name="lora-030-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001f" InteleconNetAddress="2000" Name="lora-031-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d0000001f" InteleconNetAddress="2000" Name="lora-031-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000020" InteleconNetAddress="2000" Name="lora-032-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000020" InteleconNetAddress="2000" Name="lora-032-self"/>
+
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000021" InteleconNetAddress="2000" Name="lora-033-meta"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000021" InteleconNetAddress="2000" Name="lora-033-self"/>
 </LoraObjects>
