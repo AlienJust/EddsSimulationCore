@@ -31,10 +31,10 @@
   <AttachedControllerInfo Gateway="gate2" Channel="104" Type="53" Number="1" Name="lora-se301-104-1"/>
   <AttachedControllerInfo Gateway="gate2" Channel="104" Type="53" Number="2" Name="lora-se301-104-2"/>
 
-  <!--	<AttachedControllerInfo Gateway="gate2" Channel="1" Type="49" Number="0" Name="lora-001-meta"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="1" Type="51" Number="0" Name="lora-001-self"/>
-	<AttachedControllerInfo Gateway="gate2" Channel="1" Type="50" Number="1" Name="lora-001-psch-01"/>
--->
+  <AttachedControllerInfo Gateway="gate2" Channel="1" Type="49" Number="0" Name="blhr-001-meta"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="1" Type="51" Number="0" Name="blhr-001-self"/>
+	<AttachedControllerInfo Gateway="gate2" Channel="1" Type="52" Number="0" Name="blhr-001-sdv"/>
+
   <AttachedControllerInfo Gateway="gate2" Channel="2" Type="49" Number="0" Name="lora-002-meta"/>
   <AttachedControllerInfo Gateway="gate2" Channel="2" Type="51" Number="0" Name="lora-002-self"/>
   <AttachedControllerInfo Gateway="gate2" Channel="2" Type="50" Number="1" Name="lora-002-psch-01"/>
@@ -44,9 +44,9 @@
   <AttachedControllerInfo Gateway="gate2" Channel="3" Type="50" Number="1" Name="lora-003-psch-01"/>
 
 
-  <AttachedControllerInfo Gateway="gate2" Channel="1" Type="49" Number="0" Name="artm-001-meta"/>
+  <!--<AttachedControllerInfo Gateway="gate2" Channel="1" Type="49" Number="0" Name="artm-001-meta"/>
   <AttachedControllerInfo Gateway="gate2" Channel="1" Type="51" Number="0" Name="artm-001-self"/>
-  <AttachedControllerInfo Gateway="gate2" Channel="1" Type="52" Number="0" Name="artm-001-sdv"/>
+  <AttachedControllerInfo Gateway="gate2" Channel="1" Type="52" Number="0" Name="artm-001-sdv"/>-->
 
   <AttachedControllerInfo Gateway="gate2" Channel="11" Type="49" Number="0" Name="lora-011-meta"/>
   <AttachedControllerInfo Gateway="gate2" Channel="11" Type="51" Number="0" Name="lora-011-self"/>
