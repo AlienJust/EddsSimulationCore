@@ -13,7 +13,7 @@
 
   <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="blhr-001-meta"/>
   <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="blhr-001-self"/>
-  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="4152544d00000001" InteleconNetAddress="2000" Name="blhr-001-sdv"/>
+  <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000001" InteleconNetAddress="2000" Name="blhr-001-sdv"/>
 
   <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-meta"/>
   <LoraObject CurrentDataCacheTtlSeconds="325" DeviceId="424c485200000002" InteleconNetAddress="2000" Name="lora-002-self"/>
